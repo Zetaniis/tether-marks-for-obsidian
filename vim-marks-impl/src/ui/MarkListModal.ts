@@ -71,12 +71,24 @@ export class MarkListModal extends SuggestModal<Mark> {
                 evt.preventDefault();
                 this.moveSelection(1);
             } else if (/^[a-zA-Z]$/.test(evt.key)) {
-                // Letter pressed, try to select corresponding mark
                 const letter = evt.key.toUpperCase();
-                const idx = this.marks.findIndex(m => m.letter.toUpperCase() === letter);
-                if (idx !== -1) {
+                let mark = this.marks.find(m => m.letter.toUpperCase() === letter);
+                if (this.mode === 'set') {
+                    if (!mark) {
+                        // Create a new mark for this letter
+                        const file = this.app.workspace.getActiveFile();
+                        if (!file) {
+                            new Notice('No active file to mark.');
+                            return;
+                        }
+                        mark = { letter, filePath: file.path };
+                    }
                     evt.preventDefault();
-                    await this.onChooseSuggestion(this.marks[idx], evt);
+                    await this.onChooseSuggestion(mark, evt);
+                    this.close();
+                } else if (mark) {
+                    evt.preventDefault();
+                    await this.onChooseSuggestion(mark, evt);
                     this.close();
                 }
             }
