@@ -1,4 +1,4 @@
-import { App, TFile, Notice, SuggestModal } from 'obsidian';
+import { App, TFile, Notice, SuggestModal, MarkdownView } from 'obsidian';
 import VimMarksImpl from '../main';
 import { Mark } from '../types/index';
 
@@ -48,6 +48,16 @@ export class MarkListModal extends SuggestModal<Mark> {
         } else if (this.mode === 'goto') {
             const file = this.app.vault.getAbstractFileByPath(mark.filePath);
             if (file instanceof TFile) {
+                // Check if the file is already open in a leaf
+                const leaves = this.app.workspace.getLeavesOfType('markdown');
+                for (const leaf of leaves) {
+                    const view = leaf.view;
+                    if (view instanceof MarkdownView && view.file && view.file.path === mark.filePath) {
+                        this.app.workspace.setActiveLeaf(leaf, true, true);
+                        return;
+                    }
+                }
+                // If not open, open it in the current leaf
                 this.app.workspace.getLeaf().openFile(file);
             } else {
                 new Notice(`File not found for mark '${mark.letter}'`);
