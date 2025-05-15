@@ -24,6 +24,17 @@ export class SettingsTab extends PluginSettingTab {
                     await this.plugin.saveSettings();
                 }));
 
+        new Setting(containerEl)
+            .setName('Open mark in new tab')
+            .setDesc('If enabled, opening a mark will open the file in a new tab. If disabled, it will open in the current tab.')
+            .addToggle(toggle => toggle
+                .setValue(this.plugin.settings.openMarkInNewTab ?? false)
+                .onChange(async (value) => {
+                    this.plugin.settings.openMarkInNewTab = value;
+                    await this.plugin.saveSettings();
+                })
+            );
+
         // Add keyboard shortcut settings
         containerEl.createEl('h4', { text: 'Mark List Navigation Shortcuts' });
         this.createShortcutSetting(containerEl, 'Up', 'ctrl+P', 'Shortcut for moving up in the mark list', 'markListUp');

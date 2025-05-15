@@ -57,8 +57,12 @@ export class MarkListModal extends SuggestModal<Mark> {
                         return;
                     }
                 }
-                // If not open, open it in the current leaf
-                this.app.workspace.getLeaf().openFile(file);
+                // If not open, open it in the preferred tab
+                if (this.plugin.settings.openMarkInNewTab) {
+                    this.app.workspace.getLeaf('tab').openFile(file);
+                } else {
+                    this.app.workspace.getLeaf().openFile(file);
+                }
             } else {
                 new Notice(`File not found for mark '${mark.letter}'`);
             }
