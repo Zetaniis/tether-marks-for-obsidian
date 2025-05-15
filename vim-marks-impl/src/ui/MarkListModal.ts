@@ -25,6 +25,13 @@ export class MarkListModal extends SuggestModal<Mark> {
 
     renderSuggestion(mark: Mark, el: HTMLElement) {
         el.createEl('div', { text: `${mark.letter}: ${mark.filePath}` });
+        // Immediate execution on mouse click for A-Z marks
+        if (/^[A-Z]$/i.test(mark.letter)) {
+            el.addEventListener('click', async (evt) => {
+                await this.onChooseSuggestion(mark, evt);
+                this.close();
+            });
+        }
     }
 
     async onChooseSuggestion(mark: Mark, evt: MouseEvent | KeyboardEvent) {
@@ -54,25 +61,30 @@ export class MarkListModal extends SuggestModal<Mark> {
         if (this.inputEl) {
             this.inputEl.style.display = 'none';
         }
-        // Use only the keybinds set in the settings, otherwise fall back to default
         const upKey = (this.plugin.settings.markListUp ||  'ctrl+p');
         const downKey = (this.plugin.settings.markListDown || 'ctrl+n');
-        // Store handler for removal
-        this._keyHandler = (evt: KeyboardEvent) => {
+        this._keyHandler = async (evt: KeyboardEvent) => {
             if (this.matchKeybind(evt, upKey)) {
                 evt.preventDefault();
                 this.moveSelection(-1);
             } else if (this.matchKeybind(evt, downKey)) {
                 evt.preventDefault();
                 this.moveSelection(1);
+            } else if (/^[a-zA-Z]$/.test(evt.key)) {
+                // Letter pressed, try to select corresponding mark
+                const letter = evt.key.toUpperCase();
+                const idx = this.marks.findIndex(m => m.letter.toUpperCase() === letter);
+                if (idx !== -1) {
+                    evt.preventDefault();
+                    await this.onChooseSuggestion(this.marks[idx], evt);
+                    this.close();
+                }
             }
         };
         window.addEventListener('keydown', this._keyHandler, true);
     }
 
-
     onClose() {
-        // Remove keydown handler if present
         if (this._keyHandler) {
             window.removeEventListener('keydown', this._keyHandler, true);
             this._keyHandler = undefined;
