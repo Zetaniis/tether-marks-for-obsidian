@@ -20,7 +20,7 @@ export class MarkListModal extends SuggestModal<Mark> {
 
     getSuggestions(query: string): Mark[] {
         // No search input, always show all marks
-        return this.marks;
+        return this.marks.sort((a, b) => a.letter.localeCompare(b.letter));
     }
 
     renderSuggestion(mark: Mark, el: HTMLElement) {
