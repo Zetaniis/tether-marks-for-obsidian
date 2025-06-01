@@ -1,4 +1,4 @@
-import { App, TFile, Notice, SuggestModal, MarkdownView } from 'obsidian';
+import { App, TFile, Notice, SuggestModal, MarkdownView, Platform } from 'obsidian';
 import VimMarksImpl from '../main';
 import { Mark } from '../types/index';
 
@@ -26,12 +26,12 @@ export class MarkListModal extends SuggestModal<Mark> {
     renderSuggestion(mark: Mark, el: HTMLElement) {
         el.createEl('div', { text: `${mark.letter}: ${mark.filePath}` });
         // Immediate execution on mouse click for A-Z marks
-        if (/^[A-Z]$/i.test(mark.letter)) {
-            el.addEventListener('click', async (evt) => {
-                await this.onChooseSuggestion(mark, evt);
-                this.close();
-            });
-        }
+        // if (/^[A-Z]$/i.test(mark.letter)) {
+        el.addEventListener('click', async (evt) => {
+            await this.onChooseSuggestion(mark, evt);
+            this.close();
+        });
+        // }
     }
 
     async onChooseSuggestion(mark: Mark, evt: MouseEvent | KeyboardEvent) {
@@ -75,13 +75,35 @@ export class MarkListModal extends SuggestModal<Mark> {
         if (this.inputEl) {
             this.inputEl.style.display = 'none';
         }
-        const upKey = (this.plugin.settings.markListUp ||  'ctrl+p');
-        const downKey = (this.plugin.settings.markListDown || 'ctrl+n');
+
+        // Use Obsidian's Platform API for cross-platform detection
+        const isMac = Platform.isMacOS;
+
+        // Load custom keybinds from settings, or use defaults
+        let upKeybinds: string[];
+        let downKeybinds: string[];
+
+        if (this.plugin.settings.markListUp) {
+            upKeybinds = [this.plugin.settings.markListUp];
+        } else {
+            upKeybinds = isMac
+                ? ['cmd+k', 'cmd+p', 'ctrl+k', 'ctrl+p']
+                : ['ctrl+k', 'ctrl+p', 'cmd+k', 'cmd+p'];
+        }
+        if (this.plugin.settings.markListDown) {
+            downKeybinds = [this.plugin.settings.markListDown];
+        }
+        else {
+            downKeybinds = isMac
+                ? ['cmd+j', 'cmd+n', 'ctrl+j', 'ctrl+n']
+                : ['ctrl+j', 'ctrl+n', 'cmd+j', 'cmd+n'];
+        }
+
         this._keyHandler = async (evt: KeyboardEvent) => {
-            if (this.matchKeybind(evt, upKey)) {
+            if (upKeybinds.some(kb => this.matchKeybind(evt, kb))) {
                 evt.preventDefault();
                 this.moveSelection(-1);
-            } else if (this.matchKeybind(evt, downKey)) {
+            } else if (downKeybinds.some(kb => this.matchKeybind(evt, kb))) {
                 evt.preventDefault();
                 this.moveSelection(1);
             } else if (/^[a-zA-Z]$/.test(evt.key)) {
@@ -100,7 +122,7 @@ export class MarkListModal extends SuggestModal<Mark> {
                     evt.preventDefault();
                     await this.onChooseSuggestion(mark, evt);
                     this.close();
-                } else if (mark) {
+                } else if (this.mode === 'goto' && mark) {
                     evt.preventDefault();
                     await this.onChooseSuggestion(mark, evt);
                     this.close();
@@ -136,7 +158,7 @@ export class MarkListModal extends SuggestModal<Mark> {
     }
 
     matchKeybind(evt: KeyboardEvent, keybind: string): boolean {
-        // Parse keybind string like 'ctrl+shift+p', 'ctrl+n', 'alt+down', etc.
+        // Parse keybind string like 'ctrl+shift+p', 'cmd+n', etc.
         const parts = keybind.split('+').map(p => p.trim().toLowerCase());
         let required = { ctrl: false, shift: false, alt: false, meta: false, key: '' };
         for (const part of parts) {
