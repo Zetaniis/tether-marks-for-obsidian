@@ -27,6 +27,7 @@ export class MarkListModal extends SuggestModal<Mark> {
         el.createEl('div', { text: `${mark.letter}: ${mark.filePath}` });
         // Immediate execution on mouse click for A-Z marks
         // if (/^[A-Z]$/i.test(mark.letter)) {
+        // el.removeClass('is-selected');
         el.addEventListener('click', async (evt) => {
             await this.onChooseSuggestion(mark, evt);
             this.close();
@@ -76,12 +77,12 @@ export class MarkListModal extends SuggestModal<Mark> {
             this.inputEl.style.display = 'none';
         }
 
-        // Use Obsidian's Platform API for cross-platform detection
         const isMac = Platform.isMacOS;
 
-        // Load custom keybinds from settings, or use defaults
+        // Load keybinds from settings or use defaults
         let upKeybinds: string[];
         let downKeybinds: string[];
+        let deleteKeybinds: string[];
 
         if (this.plugin.settings.markListUp) {
             upKeybinds = [this.plugin.settings.markListUp];
@@ -92,11 +93,15 @@ export class MarkListModal extends SuggestModal<Mark> {
         }
         if (this.plugin.settings.markListDown) {
             downKeybinds = [this.plugin.settings.markListDown];
-        }
-        else {
+        } else {
             downKeybinds = isMac
                 ? ['cmd+j', 'cmd+n', 'ctrl+j', 'ctrl+n']
                 : ['ctrl+j', 'ctrl+n', 'cmd+j', 'cmd+n'];
+        }
+        if (this.plugin.settings.markListDelete) {
+            deleteKeybinds = [this.plugin.settings.markListDelete];
+        } else {
+            deleteKeybinds = isMac ? ['cmd+d', 'ctrl+d'] : ['ctrl+d', 'cmd+d'];
         }
 
         this._keyHandler = async (evt: KeyboardEvent) => {
@@ -106,6 +111,27 @@ export class MarkListModal extends SuggestModal<Mark> {
             } else if (downKeybinds.some(kb => this.matchKeybind(evt, kb))) {
                 evt.preventDefault();
                 this.moveSelection(1);
+            } else if (deleteKeybinds.some(kb => this.matchKeybind(evt, kb))) {
+                evt.preventDefault();
+                // Delete the currently selected mark
+                const chooser = this.chooser;
+                const prevIdx = chooser.selectedItem;
+                const selected = chooser.values[prevIdx];
+                if (selected) {
+                    this.plugin.marks = this.plugin.marks.filter(m => m.letter !== selected.letter);
+                    await this.plugin.saveMarks(this.plugin.marks);
+                    new Notice(`Deleted mark '${selected.letter}'`);
+                    // Refresh the modal list
+                    chooser.values = this.plugin.marks;
+                    chooser.setSuggestions(this.plugin.marks);
+                    // Preserve selection index
+                    let newIdx = prevIdx;
+                    if (newIdx >= this.plugin.marks.length) {
+                        newIdx = this.plugin.marks.length - 1;
+                    }
+                    chooser.selectedItem = Math.max(0, newIdx);
+                    chooser.setSelectedItem(chooser.selectedItem, false);
+                }
             } else if (/^[a-zA-Z]$/.test(evt.key)) {
                 const letter = evt.key.toUpperCase();
                 let mark = this.marks.find(m => m.letter.toUpperCase() === letter);
