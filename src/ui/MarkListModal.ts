@@ -109,32 +109,7 @@ export class MarkListModal extends SuggestModal<Mark> {
         const keybinds = this.prepareKeybinds();
 
         // --- Prompt instructions panel ---
-        const instructions = document.createElement('div');
-        instructions.style.cssText = `
-            padding: 8px 12px;
-            border-top: 1px solid var(--background-modifier-border);
-            font-size: 0.95em;
-            color: var(--text-muted);
-            display: flex;
-            flex-direction: row;
-            align-items: center;
-            flex-wrap: wrap;
-            justify-content: space-evenly;
-            gap: 0.5rem;
-            background: var(--background-secondary);
-        `;
-        // Helper to format keybinds for display
-        const formatKeys = (keys: string[]) =>
-            keys.map(k => `<kbd style="font-family: inherit; padding:2px 6px; border-radius:4px; border:1px solid var(--background-modifier-border); background:var(--background-secondary-alt);">${k.replace('cmd', '⌘').replace('ctrl', 'Ctrl').replace('alt', 'Alt').replace('shift', 'Shift')}</kbd>`).join('/');
-
-        instructions.innerHTML = `
-            <span>${formatKeys(keybinds.up)} : Up</span>
-            <span>${formatKeys(keybinds.down)} : Down</span>
-            <span>${formatKeys(keybinds.delete)} : Delete</span>
-            <span><kbd>A-Z</kbd> : Jump/Set</span>
-            <span><kbd>Enter</kbd> : Confirm</span>
-            <span><kbd>Esc</kbd> : Close</span>
-        `;
+        const instructions = this.prepareInstructionPanelElement(keybinds);
 
         // Insert instructions panel at the bottom of the modal
         this.modalEl.appendChild(instructions);
@@ -191,6 +166,23 @@ export class MarkListModal extends SuggestModal<Mark> {
             }
         };
         window.addEventListener('keydown', this._keyHandler, true);
+    }
+
+    private prepareInstructionPanelElement(keybinds: { up: string[]; down: string[]; delete: string[]; }) {
+        const instructions = document.createElement('div');
+        instructions.addClass('vim-marks-instructions');
+        // Helper to format keybinds for display
+        const formatKeys = (keys: string[]) => keys.map(k => `<kbd>${k.replace('cmd', '⌘').replace('ctrl', 'Ctrl').replace('alt', 'Alt').replace('shift', 'Shift')}</kbd>`).join('/');
+
+        instructions.innerHTML = `
+            <span>${formatKeys(keybinds.up)} : Up</span>
+            <span>${formatKeys(keybinds.down)} : Down</span>
+            <span>${formatKeys(keybinds.delete)} : Delete</span>
+            <span><kbd>A-Z</kbd> : Jump/Set</span>
+            <span><kbd>Enter</kbd> : Confirm</span>
+            <span><kbd>Esc</kbd> : Close</span>
+        `;
+        return instructions;
     }
 
     onClose() {
