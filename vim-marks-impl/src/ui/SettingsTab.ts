@@ -40,6 +40,7 @@ export class SettingsTab extends PluginSettingTab {
         this.createShortcutSetting(containerEl, 'Up', 'ctrl+P', 'Shortcut for moving up in the mark list', 'markListUp');
         this.createShortcutSetting(containerEl, 'Down', 'ctrl+N', 'Shortcut for moving down in the mark list', 'markListDown');
         this.createShortcutSetting(containerEl, 'Select', 'Enter', 'Shortcut for selecting a mark', 'markListSelect');
+        this.createShortcutSetting(containerEl, 'Delete', 'ctrl+D', 'Shortcut for deleting a mark', 'markListDelete');
     }
 
     createShortcutSetting(containerEl: HTMLElement, name: string, defaultValue: string, desc: string, key: keyof Settings) {

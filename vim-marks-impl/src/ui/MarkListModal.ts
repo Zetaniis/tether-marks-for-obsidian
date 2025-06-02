@@ -9,12 +9,14 @@ export class MarkListModal extends SuggestModal<Mark> {
     mode: Mode;
     marks: Mark[];
     private _keyHandler?: (evt: KeyboardEvent) => void;
+    isMac : boolean;
 
     constructor(app: App, plugin: VimMarksImpl, mode: Mode) {
         super(app);
         this.plugin = plugin;
         this.mode = mode;
         this.marks = plugin.marks;
+        this.isMac = Platform.isMacOS;
         this.setPlaceholder(this.mode === 'set' ? 'Select a mark to set' : 'Select a mark to go to');
     }
 
@@ -70,6 +72,33 @@ export class MarkListModal extends SuggestModal<Mark> {
         }
     }
 
+    // Utility to prepare keybinds object
+    private prepareKeybinds() {
+        let keybinds = {
+            up: [] as string[],
+            down: [] as string[],
+            delete: [] as string[],
+        };
+
+        if (this.plugin.settings.markListUp) {
+            keybinds.up = [this.plugin.settings.markListUp];
+        } else {
+            keybinds.up = ['ctrl+k', 'ctrl+p', 'cmd+k', 'cmd+p'];
+        }
+        if (this.plugin.settings.markListDown) {
+            keybinds.down = [this.plugin.settings.markListDown];
+        } else {
+            keybinds.down = ['cmd+j', 'cmd+n', 'ctrl+j', 'ctrl+n']
+        }
+        if (this.plugin.settings.markListDelete) {
+            keybinds.delete = [this.plugin.settings.markListDelete];
+        } else {
+            keybinds.delete = ['ctrl+d', 'cmd+d'];
+        }
+
+        return keybinds;
+    }
+
     // Override to hide the input box
     onOpen() {
         super.onOpen();
@@ -77,41 +106,16 @@ export class MarkListModal extends SuggestModal<Mark> {
             this.inputEl.style.display = 'none';
         }
 
-        const isMac = Platform.isMacOS;
-
-        // Load keybinds from settings or use defaults
-        let upKeybinds: string[];
-        let downKeybinds: string[];
-        let deleteKeybinds: string[];
-
-        if (this.plugin.settings.markListUp) {
-            upKeybinds = [this.plugin.settings.markListUp];
-        } else {
-            upKeybinds = isMac
-                ? ['cmd+k', 'cmd+p', 'ctrl+k', 'ctrl+p']
-                : ['ctrl+k', 'ctrl+p', 'cmd+k', 'cmd+p'];
-        }
-        if (this.plugin.settings.markListDown) {
-            downKeybinds = [this.plugin.settings.markListDown];
-        } else {
-            downKeybinds = isMac
-                ? ['cmd+j', 'cmd+n', 'ctrl+j', 'ctrl+n']
-                : ['ctrl+j', 'ctrl+n', 'cmd+j', 'cmd+n'];
-        }
-        if (this.plugin.settings.markListDelete) {
-            deleteKeybinds = [this.plugin.settings.markListDelete];
-        } else {
-            deleteKeybinds = isMac ? ['cmd+d', 'ctrl+d'] : ['ctrl+d', 'cmd+d'];
-        }
+        const keybinds = this.prepareKeybinds();
 
         this._keyHandler = async (evt: KeyboardEvent) => {
-            if (upKeybinds.some(kb => this.matchKeybind(evt, kb))) {
+            if (keybinds.up.some(kb => this.matchKeybind(evt, kb))) {
                 evt.preventDefault();
                 this.moveSelection(-1);
-            } else if (downKeybinds.some(kb => this.matchKeybind(evt, kb))) {
+            } else if (keybinds.down.some(kb => this.matchKeybind(evt, kb))) {
                 evt.preventDefault();
                 this.moveSelection(1);
-            } else if (deleteKeybinds.some(kb => this.matchKeybind(evt, kb))) {
+            } else if (keybinds.delete.some(kb => this.matchKeybind(evt, kb))) {
                 evt.preventDefault();
                 // Delete the currently selected mark
                 const chooser = this.chooser;
