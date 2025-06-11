@@ -1,6 +1,7 @@
 import { App, TFile, Notice, SuggestModal, MarkdownView, Platform } from 'obsidian';
 import VimMarksImpl from '../main';
 import { Mark } from '../types/index';
+import { Key } from 'readline';
 
 type Mode = 'set' | 'goto' | 'show';
 
@@ -78,7 +79,7 @@ export class MarkListModal extends SuggestModal<Mark> {
             up: [] as string[],
             down: [] as string[],
             delete: [] as string[],
-        };
+        }
 
         if (this.plugin.settings.markListUp) {
             keybinds.up = [this.plugin.settings.markListUp];
@@ -135,7 +136,7 @@ export class MarkListModal extends SuggestModal<Mark> {
                     chooser.values = this.plugin.marks;
                     chooser.setSuggestions(this.plugin.marks);
                     // Preserve selection index
-                    let newIdx = prevIdx;
+                    let newIdx = prevIdx; 
                     if (newIdx >= this.plugin.marks.length) {
                         newIdx = this.plugin.marks.length - 1;
                     }
@@ -211,7 +212,7 @@ export class MarkListModal extends SuggestModal<Mark> {
         if (next < 0) next = max - 1;
         if (next >= max) next = 0;
         // @ts-ignore
-        chooser.setSelectedItem(next, true);
+        chooser.setSelectedItem(next, 0 as KeyboardEvent);
     }
 
     matchKeybind(evt: KeyboardEvent, keybind: string): boolean {
