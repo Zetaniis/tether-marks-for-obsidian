@@ -1,9 +1,8 @@
 import { App, TFile, Notice, SuggestModal, MarkdownView, Platform } from 'obsidian';
 import VimMarksImpl from '../main';
-import { Mark } from '../types/index';
-import { Key } from 'readline';
+import { Keybinds, Mark } from '../types/index';
 
-type Mode = 'set' | 'goto' | 'show';
+type Mode = 'set' | 'goto';
 
 export class MarkListModal extends SuggestModal<Mark> {
     plugin: VimMarksImpl;
@@ -57,7 +56,7 @@ export class MarkListModal extends SuggestModal<Mark> {
                 for (const leaf of leaves) {
                     const view = leaf.view;
                     if (view instanceof MarkdownView && view.file && view.file.path === mark.filePath) {
-                        this.app.workspace.setActiveLeaf(leaf, true, true);
+                        this.app.workspace.setActiveLeaf(leaf, {focus: true});
                         return;
                     }
                 }
@@ -75,7 +74,7 @@ export class MarkListModal extends SuggestModal<Mark> {
 
     // Utility to prepare keybinds object
     private prepareKeybinds() {
-        let keybinds = {
+        let keybinds : Keybinds = {
             up: [] as string[],
             down: [] as string[],
             delete: [] as string[],
@@ -89,7 +88,7 @@ export class MarkListModal extends SuggestModal<Mark> {
         if (this.plugin.settings.markListDown) {
             keybinds.down = [this.plugin.settings.markListDown];
         } else {
-            keybinds.down = ['cmd+j', 'cmd+n', 'ctrl+j', 'ctrl+n']
+            keybinds.down = ['ctrl+j', 'ctrl+n', 'cmd+j', 'cmd+n']
         }
         if (this.plugin.settings.markListDelete) {
             keybinds.delete = [this.plugin.settings.markListDelete];
@@ -125,6 +124,7 @@ export class MarkListModal extends SuggestModal<Mark> {
             } else if (keybinds.delete.some(kb => this.matchKeybind(evt, kb))) {
                 evt.preventDefault();
                 // Delete the currently selected mark
+                // @ts-ignore
                 const chooser = this.chooser;
                 const prevIdx = chooser.selectedItem;
                 const selected = chooser.values[prevIdx];
@@ -169,7 +169,7 @@ export class MarkListModal extends SuggestModal<Mark> {
         window.addEventListener('keydown', this._keyHandler, true);
     }
 
-    private prepareInstructionPanelElement(keybinds: { up: string[]; down: string[]; delete: string[]; }) {
+    private prepareInstructionPanelElement(keybinds: Keybinds) {
         const instructions = document.createElement('div');
         instructions.addClass('vim-marks-instructions');
         // Helper to format keybinds for display

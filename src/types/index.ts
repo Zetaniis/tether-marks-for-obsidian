@@ -11,3 +11,9 @@ export interface Settings {
     openMarkInNewTab?: boolean; // If true, open mark in new tab, else in current tab
     markListDelete?: string;
 }
+
+export interface Keybinds {
+    up: string[];
+    down: string[];
+    delete: string[];
+}
