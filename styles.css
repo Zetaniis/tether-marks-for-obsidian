@@ -25,3 +25,30 @@
     margin-left: 1rem;;
     margin-right: 1rem;;
 }
+
+.vim-marks-modal .suggestion-item {
+    padding: 0.5rem 0.5rem;
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+}
+
+.prompt-results > .suggestion-item > .mark-letter {
+    /* min-width: 2.5em; */
+    max-width: 1.5em;
+    /* width: 0.1rem; */
+    flex: 0 0 2.5em;
+    text-align: center;
+    margin-right: 1em;
+    font-family: inherit;
+    border-radius: 4px;
+    border: 1px solid var(--background-modifier-border);
+    background: var(--background-secondary-alt);
+}
+
+.prompt-results > .suggestion-item > .mark-file-path {
+    flex: 1 1 auto;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}

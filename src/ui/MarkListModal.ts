@@ -1,6 +1,7 @@
 import { App, TFile, Notice, SuggestModal, MarkdownView, Platform } from 'obsidian';
 import VimMarksImpl from '../main';
 import { Keybinds, Mark } from '../types/index';
+import { debug } from 'console';
 
 type Mode = 'set' | 'goto';
 
@@ -26,15 +27,12 @@ export class MarkListModal extends SuggestModal<Mark> {
     }
 
     renderSuggestion(mark: Mark, el: HTMLElement) {
-        el.createEl('div', { text: `${mark.letter}: ${mark.filePath}` });
-        // Immediate execution on mouse click for A-Z marks
-        // if (/^[A-Z]$/i.test(mark.letter)) {
-        // el.removeClass('is-selected');
+        const letterSpan = el.createEl('span', { text: mark.letter, cls: 'mark-letter' });
+        const pathSpan = el.createEl('span', { text: mark.filePath, cls: 'mark-file-path' });
         el.addEventListener('click', async (evt) => {
             await this.onChooseSuggestion(mark, evt);
             this.close();
         });
-        // }
     }
 
     async onChooseSuggestion(mark: Mark, evt: MouseEvent | KeyboardEvent) {
@@ -105,6 +103,7 @@ export class MarkListModal extends SuggestModal<Mark> {
         if (this.inputEl) {
             this.inputEl.style.display = 'none';
         }
+        this.modalEl.addClass('vim-marks-modal');
 
         const keybinds = this.prepareKeybinds();
 
