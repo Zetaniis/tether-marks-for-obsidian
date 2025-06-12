@@ -14,6 +14,8 @@ export class SettingsTab extends PluginSettingTab {
         const { containerEl } = this;
         containerEl.empty();
 
+        this.createRegisterListSetting(containerEl, "Register list", 'abcdefghijklmnopqrstuvwxyz', 'All letters that should be used as registers. Make sure to only input signs that you can input with one click of a keyboard button.', 'registerList')
+
         new Setting(containerEl)
             .setName('Hide mark list')
             .setDesc('Hide the global mark list for both commands (for fast input, no flicker).')
@@ -35,6 +37,9 @@ export class SettingsTab extends PluginSettingTab {
                 })
             );
 
+        containerEl.createEl('h4', { text: 'Harpoon registers settings' });
+        this.createRegisterListSetting(containerEl, "Harpoon register list", 'qwer', 'All letters that should be used as registers for the Harpoon feature. Leftmost letter will be the first register to be used. Make sure to only input signs that you can input with one click of a keyboard button.', 'harpoonRegisterList')
+
         // Add keyboard shortcut settings
         containerEl.createEl('h4', { text: 'Mark List Navigation Shortcuts' });
         this.createShortcutSetting(containerEl, 'Up', 'ctrl+P', 'Shortcut for moving up in the mark list', 'markListUp');
@@ -44,6 +49,18 @@ export class SettingsTab extends PluginSettingTab {
     }
 
     createShortcutSetting(containerEl: HTMLElement, name: string, defaultValue: string, desc: string, key: keyof Settings) {
+        new Setting(containerEl)
+            .setName(name)
+            .setDesc(desc)
+            .addText(text => text
+                .setValue((this.plugin.settings as any)[key] || defaultValue)
+                .onChange(async (value) => {
+                    (this.plugin.settings as any)[key] = value;
+                    await this.plugin.saveSettings();
+                }));
+    }
+
+    createRegisterListSetting(containerEl: HTMLElement, name: string, defaultValue: string, desc: string, key: keyof Settings) {
         new Setting(containerEl)
             .setName(name)
             .setDesc(desc)

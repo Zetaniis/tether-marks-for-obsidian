@@ -10,20 +10,27 @@ export class MarkListModal extends SuggestModal<Mark> {
     mode: Mode;
     marks: Mark[];
     private _keyHandler?: (evt: KeyboardEvent) => void;
-    isMac : boolean;
+    isMac: boolean;
+    isHarpoonMode: boolean;
 
-    constructor(app: App, plugin: VimMarksImpl, mode: Mode) {
+    constructor(app: App, plugin: VimMarksImpl, mode: Mode, isHarpoonMode: boolean = false) {
         super(app);
         this.plugin = plugin;
         this.mode = mode;
         this.marks = plugin.marks;
         this.isMac = Platform.isMacOS;
         this.setPlaceholder(this.mode === 'set' ? 'Select a mark to set' : 'Select a mark to go to');
+        this.isHarpoonMode = isHarpoonMode; // Default to false, can be set externally
+        // If this is a Harpoon mode, set the placeholder accordingly
     }
 
     getSuggestions(query: string): Mark[] {
         // No search input, always show all marks
-        return this.marks.sort((a, b) => a.letter.localeCompare(b.letter));
+        const availableRegisters = new Set((!this.isHarpoonMode ? this.plugin.settings.registerList : this.plugin.settings.harpoonRegisterList).split(''));
+        // console.log("harpoon mode:", this.isHarpoonMode);
+        // console.log("Harpoon list:", this.plugin.settings.harpoonRegisterList);
+        // console.log('Available registers:', availableRegisters);
+        return this.marks.sort((a, b) => a.letter.localeCompare(b.letter)).filter(el => availableRegisters.has(el.letter.toLowerCase()));
     }
 
     renderSuggestion(mark: Mark, el: HTMLElement) {
@@ -35,8 +42,7 @@ export class MarkListModal extends SuggestModal<Mark> {
         });
     }
 
-    async onChooseSuggestion(mark: Mark, evt: MouseEvent | KeyboardEvent) {
-        if (this.mode === 'set') {
+    async setNewMark(mark: Mark){
             const file = this.app.workspace.getActiveFile();
             if (!file) {
                 new Notice('No active file to mark.');
@@ -46,6 +52,11 @@ export class MarkListModal extends SuggestModal<Mark> {
             marks.push({ letter: mark.letter, filePath: file.path });
             await this.plugin.saveMarks(marks);
             new Notice(`Set mark '${mark.letter}' to ${file.name}`);
+    }
+
+    async onChooseSuggestion(mark: Mark, evt: MouseEvent | KeyboardEvent) {
+        if (this.mode === 'set') {
+            this.setNewMark(mark);
         } else if (this.mode === 'goto') {
             const file = this.app.vault.getAbstractFileByPath(mark.filePath);
             if (file instanceof TFile) {
@@ -54,7 +65,7 @@ export class MarkListModal extends SuggestModal<Mark> {
                 for (const leaf of leaves) {
                     const view = leaf.view;
                     if (view instanceof MarkdownView && view.file && view.file.path === mark.filePath) {
-                        this.app.workspace.setActiveLeaf(leaf, {focus: true});
+                        this.app.workspace.setActiveLeaf(leaf, { focus: true });
                         return;
                     }
                 }
@@ -72,7 +83,7 @@ export class MarkListModal extends SuggestModal<Mark> {
 
     // Utility to prepare keybinds object
     private prepareKeybinds() {
-        let keybinds : Keybinds = {
+        let keybinds: Keybinds = {
             up: [] as string[],
             down: [] as string[],
             delete: [] as string[],
@@ -114,6 +125,7 @@ export class MarkListModal extends SuggestModal<Mark> {
         this.modalEl.appendChild(instructions);
 
         this._keyHandler = async (evt: KeyboardEvent) => {
+            const availableRegisters = new Set((!this.isHarpoonMode ? this.plugin.settings.registerList  : this.plugin.settings.harpoonRegisterList).split(''));
             if (keybinds.up.some(kb => this.matchKeybind(evt, kb))) {
                 evt.preventDefault();
                 this.moveSelection(-1);
@@ -132,17 +144,17 @@ export class MarkListModal extends SuggestModal<Mark> {
                     await this.plugin.saveMarks(this.plugin.marks);
                     new Notice(`Deleted mark '${selected.letter}'`);
                     // Refresh the modal list
-                    chooser.values = this.plugin.marks;
-                    chooser.setSuggestions(this.plugin.marks);
+                    chooser.values = this.getSuggestions("");
+                    chooser.setSuggestions(chooser.values);
                     // Preserve selection index
-                    let newIdx = prevIdx; 
-                    if (newIdx >= this.plugin.marks.length) {
-                        newIdx = this.plugin.marks.length - 1;
+                    let newIdx = prevIdx;
+                    if (newIdx >= chooser.values.length) {
+                        newIdx = chooser.values.length - 1;
                     }
                     chooser.selectedItem = Math.max(0, newIdx);
                     chooser.setSelectedItem(chooser.selectedItem, false);
                 }
-            } else if (/^[a-zA-Z]$/.test(evt.key)) {
+            } else if (availableRegisters.has(evt.key)) {
                 const letter = evt.key.toUpperCase();
                 let mark = this.marks.find(m => m.letter.toUpperCase() === letter);
                 if (this.mode === 'set') {
@@ -232,6 +244,26 @@ export class MarkListModal extends SuggestModal<Mark> {
         if (evt.metaKey !== required.meta) return false;
         // Check key (case-insensitive)
         return evt.key.toLowerCase() === required.key;
+    }
+
+    addFileToHarpoon() {
+        // Add the selected mark to the Harpoon list
+
+        const harpoonRegisters = this.plugin.settings.harpoonRegisterList.split('');
+        let isSet = false;
+        for (const reg of harpoonRegisters) {
+            // if register not used already, then use it
+            // console.log('Checking register:', reg);
+            if (!(this.plugin.marks.map(m => m.letter.toLowerCase()).contains(reg.toLowerCase()))){
+                isSet = true;
+                this.setNewMark({ letter: reg.toUpperCase(), filePath: this.app.workspace.getActiveFile()?.path || '' });
+                break;
+            }
+        }
+        if (!isSet) {
+            // If all registers are used, show a notice
+            new Notice('Harpoon registers are full, cannot add more marks.');
+        }
     }
 
 }

@@ -1,5 +1,5 @@
 import { Plugin } from 'obsidian';
-import { setGlobalMark, goToGlobalMark } from './commands';
+import { setGlobalMark, goToGlobalMark, goToHarpoonMark, addFileToHarpoon } from './commands';
 import { MarkListModal } from './ui/MarkListModal';
 import { SettingsTab } from './ui/SettingsTab';
 import { loadSettings, saveSettings, loadMarks, saveMarks } from './utils/storage';
@@ -25,12 +25,27 @@ export default class VimMarksImpl extends Plugin {
             callback: () => goToGlobalMark(this),
         });
 
+        this.addCommand({
+            id: 'add-file-to-harpoon',
+            name: 'Add File to Harpoon',
+            callback: () => addFileToHarpoon(this),
+        });
+
+        this.addCommand({
+            id: 'go-to-harpoon-mark',
+            name: 'Go to Harpoon Mark',
+            callback: () => goToHarpoonMark(this),
+        });
+
+
+
+
         this.addSettingTab(new SettingsTab(this.app, this));
 
-        this.addRibbonIcon('bookmark', 'Show Global Marks', async () => {
-            const modal = new MarkListModal(this.app, this, 'show');
-            modal.open();
-        });
+        // this.addRibbonIcon('bookmark', 'Show Global Marks', async () => {
+        //     const modal = new MarkListModal(this.app, this, 'show');
+        //     modal.open();
+        // });
 
         console.log('VimMarksImpl plugin loaded');
     }
