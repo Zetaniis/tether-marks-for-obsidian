@@ -29,10 +29,22 @@ export class MarkListModal extends SuggestModal<Mark> {
 
     getMarks(): Mark[] {
         const availableRegisters = new Set((!this.isHarpoonMode ? this.plugin.settings.registerList : this.plugin.settings.harpoonRegisterList).split(''));
-        // console.log("harpoon mode:", this.isHarpoonMode);
-        // console.log("Harpoon list:", this.plugin.settings.harpoonRegisterList);
-        // console.log('Available registers:', availableRegisters);
-        return this.plugin.marks.sort((a, b) => a.letter.localeCompare(b.letter)).filter(el => availableRegisters.has(el.letter.toLowerCase()));
+        const marks = this.plugin.marks.filter(el => availableRegisters.has(el.letter.toLowerCase()));
+        if (!this.isHarpoonMode && this.plugin.settings.registerSortByList) {
+            // Sort marks by the order of the letters in the register list
+            const registerList = this.plugin.settings.registerList;
+            const registerOrder = new Map(registerList.split('').map((letter, index) => [letter.toLowerCase(), index]));
+            marks.sort((a, b) => (registerOrder.get(a.letter.toLowerCase()) ?? Infinity) - (registerOrder.get(b.letter.toLowerCase()) ?? Infinity));
+        }
+        else if (this.isHarpoonMode && this.plugin.settings.harpoonRegisterSortByList){
+            const registerList = this.plugin.settings.harpoonRegisterList;
+            const registerOrder = new Map(registerList.split('').map((letter, index) => [letter.toLowerCase(), index]));
+            marks.sort((a, b) => (registerOrder.get(a.letter.toLowerCase()) ?? Infinity) - (registerOrder.get(b.letter.toLowerCase()) ?? Infinity));
+        }
+        else {
+            marks.sort((a, b) => a.letter.localeCompare(b.letter))
+        }
+        return marks
     }
 
     renderSuggestion(mark: Mark, el: HTMLElement) {
@@ -44,16 +56,16 @@ export class MarkListModal extends SuggestModal<Mark> {
         });
     }
 
-    async setNewMark(mark: Mark){
-            const file = this.app.workspace.getActiveFile();
-            if (!file) {
-                new Notice('No active file to mark.');
-                return;
-            }
-            const marks = this.plugin.marks.filter((m) => m.letter !== mark.letter);
-            marks.push({ letter: mark.letter, filePath: file.path });
-            await this.plugin.saveMarks(marks);
-            new Notice(`Set mark '${mark.letter}' to ${file.name}`);
+    async setNewMark(mark: Mark) {
+        const file = this.app.workspace.getActiveFile();
+        if (!file) {
+            new Notice('No active file to mark.');
+            return;
+        }
+        const marks = this.plugin.marks.filter((m) => m.letter !== mark.letter);
+        marks.push({ letter: mark.letter, filePath: file.path });
+        await this.plugin.saveMarks(marks);
+        new Notice(`Set mark '${mark.letter}' to ${file.name}`);
     }
 
     async onChooseSuggestion(mark: Mark, evt: MouseEvent | KeyboardEvent) {
@@ -127,7 +139,7 @@ export class MarkListModal extends SuggestModal<Mark> {
         this.modalEl.appendChild(instructions);
 
         this._keyHandler = async (evt: KeyboardEvent) => {
-            const availableRegisters = new Set((!this.isHarpoonMode ? this.plugin.settings.registerList  : this.plugin.settings.harpoonRegisterList).split(''));
+            const availableRegisters = new Set((!this.isHarpoonMode ? this.plugin.settings.registerList : this.plugin.settings.harpoonRegisterList).split(''));
             if (keybinds.up.some(kb => this.matchKeybind(evt, kb))) {
                 evt.preventDefault();
                 this.moveSelection(-1);
@@ -142,9 +154,7 @@ export class MarkListModal extends SuggestModal<Mark> {
                 const prevIdx = chooser.selectedItem;
                 const selected = chooser.values[prevIdx];
                 if (selected) {
-                    this.plugin.marks = this.plugin.marks.filter(m => m.letter !== selected.letter);
-                    await this.plugin.saveMarks(this.plugin.marks);
-                    new Notice(`Deleted mark '${selected.letter}'`);
+                    await this.deleteMark(selected.letter);
                     // Refresh the modal list
                     chooser.values = this.getMarks();
                     chooser.setSuggestions(chooser.values);
@@ -181,6 +191,40 @@ export class MarkListModal extends SuggestModal<Mark> {
         };
         window.addEventListener('keydown', this._keyHandler, true);
     }
+
+    private async deleteMark(letter: string) {
+        this.plugin.marks = this.plugin.marks.filter(m => m.letter !== letter);
+
+        // waterfalling harpoon marks - not working for now
+        // if (this.plugin.settings.harpoonRegisterWaterfall) {
+        //     const harpoonRegisters = this.plugin.settings.harpoonRegisterList.split('');
+        //     // Find the index of the deleted mark's letter
+        //     // let index = harpoonRegisters.indexOf(letter.toLowerCase());
+        //     // if (index !== -1) {
+        //     let leftCur = 0;
+        //     let rightCur = 1;
+
+        //     while (rightCur < harpoonRegisters.length) {
+        //         console.log(leftCur, rightCur, harpoonRegisters.length);
+        //         // const currentMarkInd = this.plugin.marks.findIndex(el => el.letter === harpoonRegisters[index].toLowerCase());
+        //         const nextMarkInd = this.plugin.marks.findIndex(el => el.letter.toLowerCase() === harpoonRegisters[rightCur].toLowerCase());
+
+        //         if (!(nextMarkInd === -1)) {
+        //             const updatedMark: Mark = { letter: harpoonRegisters[leftCur], filePath: this.plugin.marks[nextMarkInd].filePath };
+        //             const marks = this.plugin.marks.filter((m) => m.letter !== updatedMark.letter || m.letter !== this.plugin.marks[nextMarkInd].letter);
+        //             marks.push(updatedMark);
+        //             console.log('Updated marks:', marks);
+        //             this.plugin.marks = marks;
+        //             leftCur++;
+        //         }
+        //         rightCur++;
+        //         // }
+        //     }
+        // }
+
+        await this.plugin.saveMarks(this.plugin.marks);
+        new Notice(`Deleted mark '${letter}'`);
+    };
 
     private prepareInstructionPanelElement(keybinds: Keybinds) {
         const instructions = document.createElement('div');
@@ -256,7 +300,7 @@ export class MarkListModal extends SuggestModal<Mark> {
         for (const reg of harpoonRegisters) {
             // if register not used already, then use it
             // console.log('Checking register:', reg);
-            if (!(this.plugin.marks.map(m => m.letter.toLowerCase()).contains(reg.toLowerCase()))){
+            if (!(this.plugin.marks.map(m => m.letter.toLowerCase()).contains(reg.toLowerCase()))) {
                 isSet = true;
                 this.setNewMark({ letter: reg.toUpperCase(), filePath: this.app.workspace.getActiveFile()?.path || '' });
                 break;

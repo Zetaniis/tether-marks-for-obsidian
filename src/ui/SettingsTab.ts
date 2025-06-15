@@ -14,7 +14,18 @@ export class SettingsTab extends PluginSettingTab {
         const { containerEl } = this;
         containerEl.empty();
 
+        containerEl.createEl('h4', { text: 'General' });
         this.createRegisterListSetting(containerEl, "Register list", 'abcdefghijklmnopqrstuvwxyz', 'All letters that should be used as registers. Make sure to only input signs that you can input with one click of a keyboard button.', 'registerList')
+        new Setting(containerEl)
+            .setName('Sort all registers be register list')
+            .setDesc('If enabled, the the registers will be sorted by the order of the letters in the register list. If disabled, the sort will be alphabetical.')
+            .addToggle(toggle => toggle
+                .setValue(this.plugin.settings.registerSortByList ?? false)
+                .onChange(async (value) => {
+                    this.plugin.settings.registerSortByList = value;
+                    await this.plugin.saveSettings();
+                })
+            );
 
         new Setting(containerEl)
             .setName('Hide mark list')
@@ -37,8 +48,31 @@ export class SettingsTab extends PluginSettingTab {
                 })
             );
 
-        containerEl.createEl('h4', { text: 'Harpoon registers settings' });
+
+        containerEl.createEl('h4', { text: 'Harpoon registers' });
         this.createRegisterListSetting(containerEl, "Harpoon register list", 'qwer', 'All letters that should be used as registers for the Harpoon feature. Leftmost letter will be the first register to be used. Make sure to only input signs that you can input with one click of a keyboard button.', 'harpoonRegisterList')
+        new Setting(containerEl)
+            .setName('Sort harpoon registers by harpoon register list')
+            .setDesc('If enabled, the harpoon registers will be sorted by the order of the letters in the harpoon register list. If disabled, the sort will be alphabetical.')
+            .addToggle(toggle => toggle
+                .setValue(this.plugin.settings.harpoonRegisterSortByList ?? false)
+                .onChange(async (value) => {
+                    this.plugin.settings.harpoonRegisterSortByList = value;
+                    await this.plugin.saveSettings();
+                })
+            );
+
+        new Setting(containerEl)
+            .setName('Harpoon waterfall')
+            .setDesc('If enabled, the files paths in harpoon registers will be pushed to the first free register (eg. in case of deletion of a filepath). TODO: better description')
+            .addToggle(toggle => toggle
+                .setValue(this.plugin.settings.harpoonRegisterWaterfall ?? false)
+                .onChange(async (value) => {
+                    this.plugin.settings.harpoonRegisterWaterfall = value;
+                    await this.plugin.saveSettings();
+                })
+            );
+
 
         // Add keyboard shortcut settings
         containerEl.createEl('h4', { text: 'Mark List Navigation Shortcuts' });
