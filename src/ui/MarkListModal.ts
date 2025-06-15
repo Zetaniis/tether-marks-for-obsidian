@@ -1,14 +1,12 @@
 import { App, TFile, Notice, SuggestModal, MarkdownView, Platform } from 'obsidian';
 import VimMarksImpl from '../main';
 import { Keybinds, Mark } from '../types/index';
-import { debug } from 'console';
 
-type Mode = 'set' | 'goto';
+type Mode = 'set' | 'goto' | 'delete';
 
 export class MarkListModal extends SuggestModal<Mark> {
     plugin: VimMarksImpl;
     mode: Mode;
-    marks: Mark[];
     private _keyHandler?: (evt: KeyboardEvent) => void;
     isMac: boolean;
     isHarpoonMode: boolean;
@@ -17,7 +15,7 @@ export class MarkListModal extends SuggestModal<Mark> {
         super(app);
         this.plugin = plugin;
         this.mode = mode;
-        this.marks = plugin.marks;
+        // this.marks = plugin.marks;
         this.isMac = Platform.isMacOS;
         this.setPlaceholder(this.mode === 'set' ? 'Select a mark to set' : 'Select a mark to go to');
         this.isHarpoonMode = isHarpoonMode; // Default to false, can be set externally
@@ -26,11 +24,15 @@ export class MarkListModal extends SuggestModal<Mark> {
 
     getSuggestions(query: string): Mark[] {
         // No search input, always show all marks
+        return this.getMarks();
+    }
+
+    getMarks(): Mark[] {
         const availableRegisters = new Set((!this.isHarpoonMode ? this.plugin.settings.registerList : this.plugin.settings.harpoonRegisterList).split(''));
         // console.log("harpoon mode:", this.isHarpoonMode);
         // console.log("Harpoon list:", this.plugin.settings.harpoonRegisterList);
         // console.log('Available registers:', availableRegisters);
-        return this.marks.sort((a, b) => a.letter.localeCompare(b.letter)).filter(el => availableRegisters.has(el.letter.toLowerCase()));
+        return this.plugin.marks.sort((a, b) => a.letter.localeCompare(b.letter)).filter(el => availableRegisters.has(el.letter.toLowerCase()));
     }
 
     renderSuggestion(mark: Mark, el: HTMLElement) {
@@ -144,7 +146,7 @@ export class MarkListModal extends SuggestModal<Mark> {
                     await this.plugin.saveMarks(this.plugin.marks);
                     new Notice(`Deleted mark '${selected.letter}'`);
                     // Refresh the modal list
-                    chooser.values = this.getSuggestions("");
+                    chooser.values = this.getMarks();
                     chooser.setSuggestions(chooser.values);
                     // Preserve selection index
                     let newIdx = prevIdx;
@@ -156,7 +158,7 @@ export class MarkListModal extends SuggestModal<Mark> {
                 }
             } else if (availableRegisters.has(evt.key)) {
                 const letter = evt.key.toUpperCase();
-                let mark = this.marks.find(m => m.letter.toUpperCase() === letter);
+                let mark = this.plugin.marks.find(m => m.letter.toUpperCase() === letter);
                 if (this.mode === 'set') {
                     if (!mark) {
                         // Create a new mark for this letter
