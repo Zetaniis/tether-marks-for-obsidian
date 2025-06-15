@@ -163,8 +163,7 @@ export class MarkListModal extends SuggestModal<Mark> {
                     if (newIdx >= chooser.values.length) {
                         newIdx = chooser.values.length - 1;
                     }
-                    chooser.selectedItem = Math.max(0, newIdx);
-                    chooser.setSelectedItem(chooser.selectedItem, false);
+                    chooser.setSelectedItem(Math.max(0, newIdx), false);
                 }
             } else if (availableRegisters.has(evt.key)) {
                 const letter = evt.key.toUpperCase();
