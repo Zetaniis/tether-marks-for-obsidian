@@ -10,6 +10,11 @@ export async function goToGlobalMark(plugin: VimMarksImpl) {
     new MarkListModal(plugin.app, plugin, 'goto').open();
 }
 
+export async function deleteGlobalMark(plugin: VimMarksImpl) {
+    new MarkListModal(plugin.app, plugin, 'delete').open();
+}
+
+
 export async function addFileToHarpoon(plugin: VimMarksImpl) {
     new MarkListModal(plugin.app, plugin, 'goto').addFileToHarpoon();
 }

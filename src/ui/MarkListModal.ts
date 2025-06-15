@@ -3,6 +3,11 @@ import VimMarksImpl from '../main';
 import { Keybinds, Mark } from '../types/index';
 
 type Mode = 'set' | 'goto' | 'delete';
+const placeholderMessages = {
+    set: 'Select a mark to set',
+    goto: 'Select a mark to go to',
+    delete: 'Select a mark to delete',
+};
 
 export class MarkListModal extends SuggestModal<Mark> {
     plugin: VimMarksImpl;
@@ -17,7 +22,7 @@ export class MarkListModal extends SuggestModal<Mark> {
         this.mode = mode;
         // this.marks = plugin.marks;
         this.isMac = Platform.isMacOS;
-        this.setPlaceholder(this.mode === 'set' ? 'Select a mark to set' : 'Select a mark to go to');
+        this.setPlaceholder(placeholderMessages[this.mode]);
         this.isHarpoonMode = isHarpoonMode; // Default to false, can be set externally
         // If this is a Harpoon mode, set the placeholder accordingly
     }
@@ -36,7 +41,7 @@ export class MarkListModal extends SuggestModal<Mark> {
             const registerOrder = new Map(registerList.split('').map((letter, index) => [letter.toLowerCase(), index]));
             marks.sort((a, b) => (registerOrder.get(a.letter.toLowerCase()) ?? Infinity) - (registerOrder.get(b.letter.toLowerCase()) ?? Infinity));
         }
-        else if (this.isHarpoonMode && this.plugin.settings.harpoonRegisterSortByList){
+        else if (this.isHarpoonMode && this.plugin.settings.harpoonRegisterSortByList) {
             const registerList = this.plugin.settings.harpoonRegisterList;
             const registerOrder = new Map(registerList.split('').map((letter, index) => [letter.toLowerCase(), index]));
             marks.sort((a, b) => (registerOrder.get(a.letter.toLowerCase()) ?? Infinity) - (registerOrder.get(b.letter.toLowerCase()) ?? Infinity));
@@ -56,7 +61,7 @@ export class MarkListModal extends SuggestModal<Mark> {
         });
     }
 
-    async setNewMark(mark: Mark) {
+    async setNewOrOverwriteMark(mark: Mark) {
         const file = this.app.workspace.getActiveFile();
         if (!file) {
             new Notice('No active file to mark.');
@@ -70,7 +75,7 @@ export class MarkListModal extends SuggestModal<Mark> {
 
     async onChooseSuggestion(mark: Mark, evt: MouseEvent | KeyboardEvent) {
         if (this.mode === 'set') {
-            this.setNewMark(mark);
+            this.setNewOrOverwriteMark(mark);
         } else if (this.mode === 'goto') {
             const file = this.app.vault.getAbstractFileByPath(mark.filePath);
             if (file instanceof TFile) {
@@ -92,6 +97,10 @@ export class MarkListModal extends SuggestModal<Mark> {
             } else {
                 new Notice(`File not found for mark '${mark.letter}'`);
             }
+        }
+        else if (this.mode === 'delete') {
+            // Delete the mark
+            await this.deleteMark(mark.letter);
         }
     }
 
@@ -165,6 +174,8 @@ export class MarkListModal extends SuggestModal<Mark> {
                     }
                     chooser.setSelectedItem(Math.max(0, newIdx), false);
                 }
+            // else if (keybinds.undo.some(kb => this.matchKeybind(evt, kb))) {
+            // }
             } else if (availableRegisters.has(evt.key)) {
                 const letter = evt.key.toUpperCase();
                 let mark = this.plugin.marks.find(m => m.letter.toUpperCase() === letter);
@@ -184,6 +195,12 @@ export class MarkListModal extends SuggestModal<Mark> {
                 } else if (this.mode === 'goto' && mark) {
                     evt.preventDefault();
                     await this.onChooseSuggestion(mark, evt);
+                    this.close();
+                }
+                else if (this.mode === 'delete' && mark) {
+                    evt.preventDefault();
+                    await this.onChooseSuggestion(mark, evt);
+                    // Refresh the modal list
                     this.close();
                 }
             }
@@ -301,7 +318,7 @@ export class MarkListModal extends SuggestModal<Mark> {
             // console.log('Checking register:', reg);
             if (!(this.plugin.marks.map(m => m.letter.toLowerCase()).contains(reg.toLowerCase()))) {
                 isSet = true;
-                this.setNewMark({ letter: reg.toUpperCase(), filePath: this.app.workspace.getActiveFile()?.path || '' });
+                this.setNewOrOverwriteMark({ letter: reg.toUpperCase(), filePath: this.app.workspace.getActiveFile()?.path || '' });
                 break;
             }
         }

@@ -1,5 +1,5 @@
 import { Plugin } from 'obsidian';
-import { setGlobalMark, goToGlobalMark, goToHarpoonMark, addFileToHarpoon } from './commands';
+import { setGlobalMark, goToGlobalMark, goToHarpoonMark, addFileToHarpoon, deleteGlobalMark } from './commands';
 import { MarkListModal } from './ui/MarkListModal';
 import { SettingsTab } from './ui/SettingsTab';
 import { loadSettings, saveSettings, loadMarks, saveMarks } from './utils/storage';
@@ -23,6 +23,12 @@ export default class VimMarksImpl extends Plugin {
             id: 'go-to-global-mark',
             name: 'Go to Global Mark',
             callback: () => goToGlobalMark(this),
+        });
+
+        this.addCommand({
+            id: 'delete-global-mark',
+            name: 'Delete Global Mark',
+            callback: () => deleteGlobalMark(this),
         });
 
         this.addCommand({
