@@ -255,7 +255,7 @@ export class MarkListModal extends SuggestModal<Mark> {
             }
         }
         else {
-            new Notice(`File not found for mark '${mark.letter}'`);
+            new Notice(`File not found for mark '${mark.letter}. The file may have been deleted, moved or renamed.`);
         }
     }
 
