@@ -253,6 +253,8 @@ export class MarkListModal extends SuggestModal<Mark> {
             } else {
                 this.app.workspace.getLeaf().openFile(file);
             }
+        }
+        else {
             new Notice(`File not found for mark '${mark.letter}'`);
         }
     }
