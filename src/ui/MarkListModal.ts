@@ -1,4 +1,4 @@
-import { App, TFile, Notice, SuggestModal, MarkdownView, Platform } from 'obsidian';
+import { App, TFile, Notice, SuggestModal, MarkdownView, Platform, WorkspaceLeaf } from 'obsidian';
 import VimMarksImpl from '../main';
 import { Keybinds, Mark } from '../types/index';
 
@@ -61,47 +61,33 @@ export class MarkListModal extends SuggestModal<Mark> {
         });
     }
 
-    async setNewOrOverwriteMark(mark: Mark) {
-        const file = this.app.workspace.getActiveFile();
-        if (!file) {
-            new Notice('No active file to mark.');
-            return;
-        }
-        const marks = this.plugin.marks.filter((m) => m.letter !== mark.letter);
-        marks.push({ letter: mark.letter, filePath: file.path });
-        await this.plugin.saveMarks(marks);
-        new Notice(`Set mark '${mark.letter}' to ${file.name}`);
-    }
 
-    async onChooseSuggestion(mark: Mark, evt: MouseEvent | KeyboardEvent) {
-        if (this.mode === 'set') {
-            this.setNewOrOverwriteMark(mark);
-        } else if (this.mode === 'goto') {
-            const file = this.app.vault.getAbstractFileByPath(mark.filePath);
-            if (file instanceof TFile) {
-                // Check if the file is already open in a leaf
-                const leaves = this.app.workspace.getLeavesOfType('markdown');
-                for (const leaf of leaves) {
-                    const view = leaf.view;
-                    if (view instanceof MarkdownView && view.file && view.file.path === mark.filePath) {
-                        this.app.workspace.setActiveLeaf(leaf, { focus: true });
-                        return;
-                    }
-                }
-                // If not open, open it in the preferred tab
-                if (this.plugin.settings.openMarkInNewTab) {
-                    this.app.workspace.getLeaf('tab').openFile(file);
-                } else {
-                    this.app.workspace.getLeaf().openFile(file);
-                }
-            } else {
-                new Notice(`File not found for mark '${mark.letter}'`);
-            }
-        }
-        else if (this.mode === 'delete') {
-            // Delete the mark
-            await this.deleteMark(mark.letter);
-        }
+    getAllOpenedFilesExperimental(): any {
+        // xD
+        // @ts-ignore
+        return this.app.workspace.getLayout().main?.children[0].children
+
+        // const app = this.app;
+        // const files = new Set<TFile>();
+        // const layout = app.workspace.getLayout();
+
+        // function collectFiles(node: any) {
+        //     if (!node) return;
+        //     if (node.type === 'leaf' && node.state?.file) {
+        //         const file = app.vault.getAbstractFileByPath(node.state.file);
+        //         if (file instanceof TFile) files.add(file);
+        //     }
+        //     if (node.children && Array.isArray(node.children)) {
+        //         for (const child of node.children) collectFiles(child);
+        //     }
+        // }
+
+        // // Traverse all possible roots
+        // for (const key of ['main', 'left', 'right', 'center', 'popout']) {
+        //     if (layout[key]) collectFiles(layout[key]);
+        // }
+
+        // return Array.from(files);
     }
 
     // Utility to prepare keybinds object
@@ -174,8 +160,8 @@ export class MarkListModal extends SuggestModal<Mark> {
                     }
                     chooser.setSelectedItem(Math.max(0, newIdx), false);
                 }
-            // else if (keybinds.undo.some(kb => this.matchKeybind(evt, kb))) {
-            // }
+                // else if (keybinds.undo.some(kb => this.matchKeybind(evt, kb))) {
+                // }
             } else if (availableRegisters.has(evt.key)) {
                 const letter = evt.key.toUpperCase();
                 let mark = this.plugin.marks.find(m => m.letter.toUpperCase() === letter);
@@ -207,6 +193,70 @@ export class MarkListModal extends SuggestModal<Mark> {
         };
         window.addEventListener('keydown', this._keyHandler, true);
     }
+
+    async onChooseSuggestion(mark: Mark, evt: MouseEvent | KeyboardEvent) {
+        if (this.mode === 'set') {
+            this.setNewOrOverwriteMark(mark);
+        } else if (this.mode === 'goto') {
+            this.goToMark(mark);
+        } else if (this.mode === 'delete') {
+            // Delete the mark
+            await this.deleteMark(mark.letter);
+        }
+    }
+
+    async setNewOrOverwriteMark(mark: Mark) {
+        const file = this.app.workspace.getActiveFile();
+        if (!file) {
+            new Notice('No active file to mark.');
+            return;
+        }
+        const marks = this.plugin.marks.filter((m) => m.letter !== mark.letter);
+        marks.push({ letter: mark.letter, filePath: file.path });
+        await this.plugin.saveMarks(marks);
+        new Notice(`Set mark '${mark.letter}' to ${file.name}`);
+    }
+
+    goToMark(mark: Mark) {
+        const file = this.app.vault.getAbstractFileByPath(mark.filePath);
+        if (file instanceof TFile) {
+            if (this.plugin.settings.experimentalGoto) {
+                const openedFiles = this.getAllOpenedFilesExperimental()
+                // console.log('Opened files:', openedFiles);
+                for (const openedFile of openedFiles) {
+                    if (openedFile.type == 'leaf' && openedFile.state.state.file === mark.filePath) {
+                        // If the file is already open, switch to it
+                        const leaf = this.app.workspace.getLeafById(openedFile.id);
+                        // console.log('Found leaf for file:', openedFile.state.state.file, openedFile.id, leaf);
+                        if (leaf) {
+                            this.app.workspace.setActiveLeaf(leaf, { focus: true });
+                            return;
+                        }
+                    }
+                }
+            }
+            else {
+                // Check if the file is already open in a leaf
+                const leaves = this.app.workspace.getLeavesOfType('markdown');
+                // Check if the file is already open in a leaf // const leaves = this.app.workspace.getLeavesOfType('markdown');
+                for (const leaf of leaves) {
+                    const view = leaf.view;
+                    if (view instanceof MarkdownView && view.file && view.file.path === mark.filePath) {
+                        this.app.workspace.setActiveLeaf(leaf, { focus: true });
+                        return;
+                    }
+                }
+            }
+            // If not open, open it in the preferred tab
+            if (this.plugin.settings.openMarkInNewTab) {
+                this.app.workspace.getLeaf('tab').openFile(file);
+            } else {
+                this.app.workspace.getLeaf().openFile(file);
+            }
+            new Notice(`File not found for mark '${mark.letter}'`);
+        }
+    }
+
 
     private async deleteMark(letter: string) {
         this.plugin.marks = this.plugin.marks.filter(m => m.letter !== letter);

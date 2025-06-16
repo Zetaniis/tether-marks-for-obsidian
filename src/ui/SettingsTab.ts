@@ -48,6 +48,16 @@ export class SettingsTab extends PluginSettingTab {
                 })
             );
 
+        new Setting(containerEl)
+            .setName('No duplication of opened files when using goto (experimental)')
+            .setDesc('Restarting obsdian with opened files and trying to switch to them using the mark list will cause a new tab to open. Use this to prevent that. This is a rigid implementation of goto mechanism and may stop working in the future.')
+            .addToggle(toggle => toggle
+                .setValue(this.plugin.settings.experimentalGoto ?? true)
+                .onChange(async (value) => {
+                    this.plugin.settings.experimentalGoto = value;
+                    await this.plugin.saveSettings();
+                })
+            );
 
         containerEl.createEl('h4', { text: 'Harpoon registers' });
         this.createRegisterListSetting(containerEl, "Harpoon register list", 'qwer', 'All letters that should be used as registers for the Harpoon feature. Leftmost letter will be the first register to be used. Make sure to only input signs that you can input with one click of a keyboard button.', 'harpoonRegisterList')
@@ -80,6 +90,8 @@ export class SettingsTab extends PluginSettingTab {
         this.createShortcutSetting(containerEl, 'Down', 'ctrl+N', 'Shortcut for moving down in the mark list', 'markListDown');
         this.createShortcutSetting(containerEl, 'Select', 'Enter', 'Shortcut for selecting a mark', 'markListSelect');
         this.createShortcutSetting(containerEl, 'Delete', 'ctrl+D', 'Shortcut for deleting a mark', 'markListDelete');
+
+
     }
 
     createShortcutSetting(containerEl: HTMLElement, name: string, defaultValue: string, desc: string, key: keyof Settings) {

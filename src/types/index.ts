@@ -15,6 +15,7 @@ export interface Settings {
     harpoonRegisterList: string; // All letters that should be used as registers for the Harpoon feature
     harpoonRegisterSortByList: boolean;
     harpoonRegisterWaterfall: boolean;
+    experimentalGoto: boolean;
 }
 
 export interface Keybinds {
