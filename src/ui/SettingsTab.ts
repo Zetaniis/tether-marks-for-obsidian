@@ -39,7 +39,7 @@ export class SettingsTab extends PluginSettingTab {
 
         new Setting(containerEl)
             .setName('Open mark in new tab')
-            .setDesc('If enabled, opening a mark will open the file in a new tab. If disabled, it will open in the current tab.')
+            .setDesc('If enabled, opening a mark will open the file in a new tab. If disabled, it will open the file in the current tab.')
             .addToggle(toggle => toggle
                 .setValue(this.plugin.settings.openMarkInNewTab ?? false)
                 .onChange(async (value) => {
