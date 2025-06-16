@@ -15,7 +15,20 @@ export class SettingsTab extends PluginSettingTab {
         containerEl.empty();
 
         containerEl.createEl('h4', { text: 'General' });
-        this.createRegisterListSetting(containerEl, "Register list", 'abcdefghijklmnopqrstuvwxyz', 'All letters that should be used as registers. Make sure to only input signs that you can input with one click of a keyboard button.', 'registerList')
+        const defaultRegisterList = 'abcdefghijklmnopqrstuvwxyz'; // Default value for register list
+        this.createRegisterListSetting(containerEl, "Register list", defaultRegisterList, 'All letters that should be used as registers. Make sure to only input signs that you can input with one click of a keyboard button.', 'registerList')
+            .addExtraButton((btn) => {
+                btn
+                    .setIcon('refresh-ccw')
+                    .setTooltip('Reset to default register list')
+                    .onClick(async () => {
+                        this.plugin.settings.registerList = defaultRegisterList;
+                        await this.plugin.saveSettings();
+                        this.display(); // Refresh the settings tab to show the updated value
+                    }
+                    );
+            })
+
         new Setting(containerEl)
             .setName('Sort all registers be register list')
             .setDesc('If enabled, the the registers will be sorted by the order of the letters in the register list. If disabled, the sort will be alphabetical.')
@@ -60,7 +73,20 @@ export class SettingsTab extends PluginSettingTab {
             );
 
         containerEl.createEl('h4', { text: 'Harpoon registers' });
-        this.createRegisterListSetting(containerEl, "Harpoon register list", 'qwer', 'All letters that should be used as registers for the Harpoon feature. Leftmost letter will be the first register to be used. Make sure to only input signs that you can input with one click of a keyboard button.', 'harpoonRegisterList')
+        const defaultHarpoonRegisterList = 'qwer'; // Default value for harpoon register list
+        this.createRegisterListSetting(containerEl, "Harpoon register list", defaultHarpoonRegisterList, 'All letters that should be used as registers for the Harpoon feature. Leftmost letter will be the first register to be used. Make sure to only input signs that you can input with one click of a keyboard button.', 'harpoonRegisterList')
+            .addExtraButton((btn) => {
+                btn
+                    .setIcon('refresh-ccw')
+                    .setTooltip('Reset to default harpoon register list')
+                    .onClick(async () => {
+                        this.plugin.settings.harpoonRegisterList = defaultHarpoonRegisterList;
+                        await this.plugin.saveSettings();
+                        this.display(); // Refresh the settings tab to show the updated value
+                    }
+                    );
+            })
+
         new Setting(containerEl)
             .setName('Sort harpoon registers by harpoon register list')
             .setDesc('If enabled, the harpoon registers will be sorted by the order of the letters in the harpoon register list. If disabled, the sort will be alphabetical.')
@@ -106,8 +132,8 @@ export class SettingsTab extends PluginSettingTab {
                 }));
     }
 
-    createRegisterListSetting(containerEl: HTMLElement, name: string, defaultValue: string, desc: string, key: keyof Settings) {
-        new Setting(containerEl)
+    createRegisterListSetting(containerEl: HTMLElement, name: string, defaultValue: string, desc: string, key: keyof Settings): Setting {
+        return new Setting(containerEl)
             .setName(name)
             .setDesc(desc)
             .addText(text => text
