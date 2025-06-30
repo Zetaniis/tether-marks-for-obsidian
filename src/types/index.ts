@@ -4,7 +4,7 @@ export interface Mark {
 }
 
 export interface Settings {
-    hideMarkListDuringInput: boolean;
+    hideMarkListDuringInput?: boolean;
     markListUp?: string;
     markListDown?: string;
     markListSelect?: string;
@@ -12,10 +12,10 @@ export interface Settings {
     openMarkInNewTab?: boolean; // If true, open mark in new tab, else in current tab
     markListDelete?: string;
     registerList: string; // All letters that should be used as registers
-    registerSortByList: boolean; // If true, sort registers by the order of the letters in the registerList
+    registerSortByList?: boolean; // If true, sort registers by the order of the letters in the registerList
     harpoonRegisterList: string; // All letters that should be used as registers for the Harpoon feature
-    harpoonRegisterSortByList: boolean;
-    harpoonRegisterGapRemoval: boolean;
+    harpoonRegisterSortByList?: boolean;
+    harpoonRegisterGapRemoval?: boolean;
     experimentalGoto: boolean;
 }
 

@@ -1,5 +1,5 @@
 /* MarkListModal instructions panel styling */
-.vim-marks-instructions {
+.modal-instruction-el {
     padding: 8px 12px;
     border-top: 1px solid var(--background-modifier-border);
     font-size: 0.95em;
@@ -13,7 +13,7 @@
     background: var(--background-secondary);
 }
 
-.vim-marks-instructions kbd {
+.modal-instruction-el kbd {
     font-family: inherit;
     padding: 2px 6px;
     border-radius: 4px;
@@ -21,12 +21,12 @@
     background: var(--background-secondary-alt);
 }
 
-.vim-marks-instructions span {
+.modal-instruction-el span {
     margin-left: 1rem;;
     margin-right: 1rem;;
 }
 
-.vim-marks-modal .suggestion-item {
+.marks-modal .suggestion-item {
     padding: 0.5rem 0.5rem;
     display: flex;
     flex-direction: row;

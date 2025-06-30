@@ -1,14 +1,14 @@
 import { App, TFile, Notice, SuggestModal, MarkdownView, Platform, WorkspaceLeaf } from 'obsidian';
 import VimMarksImpl from '../main';
 import { Keybinds, Mark } from '../types/index';
-import { defaultKeybinds, Mode, placeholderMessages } from '../utils/defaultValues';
+import { defaultKeybinds, defaultKeybindsMac, modalInstructionElClass, modalMarkFilepathClass, modalMarkLetterClass, Mode, placeholderMessages } from '../utils/defaultValues';
+import { findFirstUnusedRegister, getSortedAndFilteredMarks, sortMarksAlphabetically } from '../utils/marks';
 
 
 export class MarkListModal extends SuggestModal<Mark> {
     plugin: VimMarksImpl;
     mode: Mode;
     private _keyHandler?: (evt: KeyboardEvent) => void;
-    isMac: boolean;
     isHarpoonMode: boolean;
 
     constructor(app: App, plugin: VimMarksImpl, mode: Mode, isHarpoonMode: boolean = false) {
@@ -16,10 +16,9 @@ export class MarkListModal extends SuggestModal<Mark> {
         this.plugin = plugin;
         this.mode = mode;
         // this.marks = plugin.marks;
-        this.isMac = Platform.isMacOS;
         this.setPlaceholder(placeholderMessages[this.mode]);
+        // this.setInstructions([{command: 'vim-marks:mark-list', purpose: "asdf"}]);
         this.isHarpoonMode = isHarpoonMode; // Default to false, can be set externally
-        // If this is a Harpoon mode, set the placeholder accordingly
     }
 
     getSuggestions(query: string): Mark[] {
@@ -28,28 +27,12 @@ export class MarkListModal extends SuggestModal<Mark> {
     }
 
     getMarks(): Mark[] {
-        const availableRegisters = new Set((!this.isHarpoonMode ? this.plugin.settings.registerList : this.plugin.settings.harpoonRegisterList).split(''));
-        const marks = this.plugin.marks.filter(el => availableRegisters.has(el.letter.toLowerCase()));
-        if (!this.isHarpoonMode && this.plugin.settings.registerSortByList) {
-            // Sort marks by the order of the letters in the register list
-            const registerList = this.plugin.settings.registerList;
-            const registerOrder = new Map(registerList.split('').map((letter, index) => [letter.toLowerCase(), index]));
-            marks.sort((a, b) => (registerOrder.get(a.letter.toLowerCase()) ?? Infinity) - (registerOrder.get(b.letter.toLowerCase()) ?? Infinity));
-        }
-        else if (this.isHarpoonMode && this.plugin.settings.harpoonRegisterSortByList) {
-            const registerList = this.plugin.settings.harpoonRegisterList;
-            const registerOrder = new Map(registerList.split('').map((letter, index) => [letter.toLowerCase(), index]));
-            marks.sort((a, b) => (registerOrder.get(a.letter.toLowerCase()) ?? Infinity) - (registerOrder.get(b.letter.toLowerCase()) ?? Infinity));
-        }
-        else {
-            marks.sort((a, b) => a.letter.localeCompare(b.letter))
-        }
-        return marks
+        return getSortedAndFilteredMarks(this.plugin.marks, this.isHarpoonMode, this.plugin.settings);
     }
 
     renderSuggestion(mark: Mark, el: HTMLElement) {
-        const letterSpan = el.createEl('span', { text: mark.letter, cls: 'mark-letter' });
-        const pathSpan = el.createEl('span', { text: mark.filePath, cls: 'mark-file-path' });
+        el.createEl('span', { text: mark.letter, cls: modalMarkLetterClass });
+        el.createEl('span', { text: mark.filePath, cls: modalMarkFilepathClass });
         el.addEventListener('click', async (evt) => {
             await this.onChooseSuggestion(mark, evt);
             this.close();
@@ -87,7 +70,7 @@ export class MarkListModal extends SuggestModal<Mark> {
 
     // Utility to prepare keybinds object
     private prepareKeybinds() {
-        let keybinds: Keybinds = defaultKeybinds;
+        let keybinds: Keybinds = (!Platform.isMacOS) ? { ...defaultKeybinds } : { ...defaultKeybindsMac };
 
         if (this.plugin.settings.markListUp) {
             keybinds.up = [this.plugin.settings.markListUp];
@@ -114,17 +97,22 @@ export class MarkListModal extends SuggestModal<Mark> {
         if (this.inputEl) {
             this.inputEl.style.display = 'none';
         }
-        this.modalEl.addClass('vim-marks-modal');
+        this.modalEl.addClass('marks-modal');
 
         const keybinds = this.prepareKeybinds();
 
         // --- Prompt instructions panel ---
-        const instructions = this.prepareInstructionPanelElement(keybinds);
+        const instructions = this.prepareModalInstructionElement(keybinds);
 
         // Insert instructions panel at the bottom of the modal
         this.modalEl.appendChild(instructions);
 
-        this._keyHandler = async (evt: KeyboardEvent) => {
+        this._keyHandler = this.getModalKeyHandler(keybinds);
+        window.addEventListener('keydown', this._keyHandler, true);
+    }
+
+    getModalKeyHandler(keybinds: Keybinds) {
+        return async (evt: KeyboardEvent) => {
             const availableRegisters = new Set((!this.isHarpoonMode ? this.plugin.settings.registerList : this.plugin.settings.harpoonRegisterList).split(''));
             // @ts-ignore
             const chooser = this.chooser;
@@ -138,9 +126,9 @@ export class MarkListModal extends SuggestModal<Mark> {
                 evt.preventDefault();
                 // Delete the currently selected mark
                 const prevIdx = chooser.selectedItem;
-                const selected = chooser.values[prevIdx];
+                const selected: Mark = chooser.values[prevIdx];
                 if (selected) {
-                    await this.deleteMark(selected.letter);
+                    await this.deleteMark(selected);
                     // Refresh the modal list
                     chooser.values = this.getMarks();
                     chooser.setSuggestions(chooser.values);
@@ -190,7 +178,6 @@ export class MarkListModal extends SuggestModal<Mark> {
                 }
             }
         };
-        window.addEventListener('keydown', this._keyHandler, true);
     }
 
     async onChooseSuggestion(mark: Mark, evt: MouseEvent | KeyboardEvent) {
@@ -199,9 +186,7 @@ export class MarkListModal extends SuggestModal<Mark> {
         } else if (this.mode === 'goto') {
             this.goToMark(mark);
         } else if (this.mode === 'delete') {
-            // Delete the mark
-            // TODO: maybe change this to mark paramater rather than mark.letter in order to have consistent contract for this level of mark processing
-            await this.deleteMark(mark.letter);
+            this.deleteMark(mark);
         }
     }
 
@@ -260,11 +245,21 @@ export class MarkListModal extends SuggestModal<Mark> {
     }
 
 
-    private async deleteMark(letter: string) {
-        this.plugin.marks = this.plugin.marks.filter(m => m.letter !== letter);
+    private async deleteMark(mark: Mark) {
+        const cMark = { ...mark };
+        this.plugin.marks = this.plugin.marks.filter(m => m.letter !== cMark.letter);
 
+        if (this.plugin.settings.harpoonRegisterGapRemoval) {
+            this.removeGapsForHarpoonMarks();
+        }
+
+        await this.plugin.saveMarks(this.plugin.marks);
+        new Notice(`Deleted mark '${cMark.letter}'`);
+    };
+
+    removeGapsForHarpoonMarks() {
+        new Notice("Not implemented");
         // removing gaps in harpoon marks - not working for now
-        // if (this.plugin.settings.harpoonRegisterWaterfall) {
         //     const harpoonRegisters = this.plugin.settings.harpoonRegisterList.split('');
         //     // Find the index of the deleted mark's letter
         //     // let index = harpoonRegisters.indexOf(letter.toLowerCase());
@@ -287,36 +282,33 @@ export class MarkListModal extends SuggestModal<Mark> {
         //         }
         //         rightCur++;
         //         // }
-        //     }
         // }
 
-        await this.plugin.saveMarks(this.plugin.marks);
-        new Notice(`Deleted mark '${letter}'`);
-    };
+    }
 
-    async restoreLastChangedMark(){
+    async restoreLastChangedMark() {
         // Undo the last changed mark
         if (this.plugin.lastChangedMark) {
-            const lastMark = {...this.plugin.lastChangedMark};
-            const markToSwap = this.plugin.marks.find(m => m.letter === lastMark.letter);
-            const marksWithoutDiscarded = this.plugin.marks.filter(m => m.letter !== lastMark.letter);
+            const markToRestore = { ...this.plugin.lastChangedMark };
+            const markToDiscard = this.plugin.marks.find(m => m.letter === markToRestore.letter);
+            const marksWithoutDiscarded = this.plugin.marks.filter(m => m.letter !== markToRestore.letter);
 
-            if (markToSwap) {
-                this.plugin.saveLastChangedMark(markToSwap);
+            if (markToDiscard) {
+                this.plugin.saveLastChangedMark(markToDiscard);
             }
 
-            marksWithoutDiscarded.push({ letter: lastMark.letter, filePath: lastMark.filePath });
+            marksWithoutDiscarded.push({ letter: markToRestore.letter, filePath: markToRestore.filePath });
             await this.plugin.saveMarks(marksWithoutDiscarded);
             // await this.setNewOrOverwriteMark(lastMark);
-            new Notice(`Restored mark '${lastMark.letter}' to ${lastMark.filePath}`);
+            new Notice(`Restored mark '${markToRestore.letter}' to ${markToRestore.filePath}`);
         } else {
             new Notice('No last changed mark to restore.');
         }
     }
 
-    private prepareInstructionPanelElement(keybinds: Keybinds) {
+    private prepareModalInstructionElement(keybinds: Keybinds) {
         const instructions = document.createElement('div');
-        instructions.addClass('vim-marks-instructions');
+        instructions.addClass(modalInstructionElClass);
         // Helper to format keybinds for display
         const formatKeys = (keys: string[]) => keys.map(k => `<kbd>${k.replace('cmd', '⌘').replace('ctrl', 'Ctrl').replace('alt', 'Alt').replace('shift', 'Shift')}</kbd>`).join('/');
 
@@ -325,7 +317,7 @@ export class MarkListModal extends SuggestModal<Mark> {
             <span>${formatKeys(keybinds.down)} : Down</span>
             <span>${formatKeys(keybinds.delete)} : Delete</span>
             <span>${formatKeys(keybinds.undo)} : Undo last changed mark</span>
-            <span><kbd>A-Z</kbd> : Jump/Set/Delete</span>
+            <span><kbd>Symbol</kbd> : Jump/Set/Delete</span>
             <span><kbd>Enter</kbd> : Confirm</span>
             <span><kbd>Esc</kbd> : Close</span>
 
@@ -335,7 +327,7 @@ export class MarkListModal extends SuggestModal<Mark> {
 
     onClose() {
         // Remove instructions panel if present
-        const instructions = this.modalEl.querySelector('div');
+        const instructions = this.modalEl.querySelector("." + modalInstructionElClass);
         if (instructions) instructions.remove();
 
         if (this._keyHandler) {
@@ -384,21 +376,15 @@ export class MarkListModal extends SuggestModal<Mark> {
 
     addFileToHarpoon() {
         // Add the selected mark to the Harpoon list
-
         const harpoonRegisters = this.plugin.settings.harpoonRegisterList.split('');
-        let isSet = false;
-        for (const reg of harpoonRegisters) {
-            // if register not used already, then use it
-            // console.log('Checking register:', reg);
-            if (!(this.plugin.marks.map(m => m.letter.toLowerCase()).contains(reg.toLowerCase()))) {
-                isSet = true;
-                this.setNewOrOverwriteMark({ letter: reg.toUpperCase(), filePath: this.app.workspace.getActiveFile()?.path || '' });
-                break;
-            }
-        }
-        if (!isSet) {
+        const reg = findFirstUnusedRegister(this.plugin.marks, harpoonRegisters);
+
+        if (!reg) {
             // If all registers are used, show a notice
             new Notice('Harpoon registers are full, cannot add more marks.');
+        }
+        else {
+            this.setNewOrOverwriteMark({ letter: reg.toUpperCase(), filePath: this.app.workspace.getActiveFile()?.path || '' });
         }
     }
 

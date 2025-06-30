@@ -1,5 +1,4 @@
 import VimMarksImpl from './main';
-import { Mark } from './types';
 import { MarkListModal } from './ui/MarkListModal';
 
 export async function setGlobalMark(plugin: VimMarksImpl) {

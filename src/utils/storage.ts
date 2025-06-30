@@ -1,8 +1,9 @@
 import VimMarksImpl from '../main';
 import { Settings, Mark } from '../types/index';
+import { defaultSettings } from './defaultValues';
 
 export async function loadSettings(plugin: VimMarksImpl): Promise<Settings> {
-    return (await plugin.loadData())?.settings || { hideMarkListDuringInput: false };
+    return (await plugin.loadData())?.settings || defaultSettings;
 }
 
 export async function saveSettings(plugin: VimMarksImpl, settings: Settings) {
