@@ -102,9 +102,9 @@ export class SettingsTab extends PluginSettingTab {
             .setName('Harpoon waterfall')
             .setDesc('If enabled, the files paths in harpoon registers will be pushed to the first free register (eg. in case of deletion of a filepath). TODO: better description')
             .addToggle(toggle => toggle
-                .setValue(this.plugin.settings.harpoonRegisterWaterfall ?? false)
+                .setValue(this.plugin.settings.harpoonRegisterGapRemoval ?? false)
                 .onChange(async (value) => {
-                    this.plugin.settings.harpoonRegisterWaterfall = value;
+                    this.plugin.settings.harpoonRegisterGapRemoval = value;
                     await this.plugin.saveSettings();
                 })
             );

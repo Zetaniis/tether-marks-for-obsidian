@@ -263,7 +263,7 @@ export class MarkListModal extends SuggestModal<Mark> {
     private async deleteMark(letter: string) {
         this.plugin.marks = this.plugin.marks.filter(m => m.letter !== letter);
 
-        // waterfalling harpoon marks - not working for now
+        // removing gaps in harpoon marks - not working for now
         // if (this.plugin.settings.harpoonRegisterWaterfall) {
         //     const harpoonRegisters = this.plugin.settings.harpoonRegisterList.split('');
         //     // Find the index of the deleted mark's letter
