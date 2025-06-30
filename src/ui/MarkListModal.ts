@@ -1,13 +1,8 @@
 import { App, TFile, Notice, SuggestModal, MarkdownView, Platform, WorkspaceLeaf } from 'obsidian';
 import VimMarksImpl from '../main';
 import { Keybinds, Mark } from '../types/index';
+import { defaultKeybinds, Mode, placeholderMessages } from '../utils/defaultValues';
 
-type Mode = 'set' | 'goto' | 'delete';
-const placeholderMessages = {
-    set: 'Select a mark to set',
-    goto: 'Select a mark to go to',
-    delete: 'Select a mark to delete',
-};
 
 export class MarkListModal extends SuggestModal<Mark> {
     plugin: VimMarksImpl;
@@ -92,26 +87,22 @@ export class MarkListModal extends SuggestModal<Mark> {
 
     // Utility to prepare keybinds object
     private prepareKeybinds() {
-        let keybinds: Keybinds = {
-            up: [] as string[],
-            down: [] as string[],
-            delete: [] as string[],
-        }
+        let keybinds: Keybinds = defaultKeybinds;
 
         if (this.plugin.settings.markListUp) {
             keybinds.up = [this.plugin.settings.markListUp];
-        } else {
-            keybinds.up = ['ctrl+k', 'ctrl+p', 'cmd+k', 'cmd+p'];
         }
+
         if (this.plugin.settings.markListDown) {
             keybinds.down = [this.plugin.settings.markListDown];
-        } else {
-            keybinds.down = ['ctrl+j', 'ctrl+n', 'cmd+j', 'cmd+n']
         }
+
         if (this.plugin.settings.markListDelete) {
             keybinds.delete = [this.plugin.settings.markListDelete];
-        } else {
-            keybinds.delete = ['ctrl+d', 'cmd+d'];
+        }
+
+        if (this.plugin.settings.markChangeUndo) {
+            keybinds.undo = [this.plugin.settings.markChangeUndo];
         }
 
         return keybinds;
@@ -135,6 +126,8 @@ export class MarkListModal extends SuggestModal<Mark> {
 
         this._keyHandler = async (evt: KeyboardEvent) => {
             const availableRegisters = new Set((!this.isHarpoonMode ? this.plugin.settings.registerList : this.plugin.settings.harpoonRegisterList).split(''));
+            // @ts-ignore
+            const chooser = this.chooser;
             if (keybinds.up.some(kb => this.matchKeybind(evt, kb))) {
                 evt.preventDefault();
                 this.moveSelection(-1);
@@ -144,8 +137,6 @@ export class MarkListModal extends SuggestModal<Mark> {
             } else if (keybinds.delete.some(kb => this.matchKeybind(evt, kb))) {
                 evt.preventDefault();
                 // Delete the currently selected mark
-                // @ts-ignore
-                const chooser = this.chooser;
                 const prevIdx = chooser.selectedItem;
                 const selected = chooser.values[prevIdx];
                 if (selected) {
@@ -162,6 +153,14 @@ export class MarkListModal extends SuggestModal<Mark> {
                 }
                 // else if (keybinds.undo.some(kb => this.matchKeybind(evt, kb))) {
                 // }
+            }
+            else if (keybinds.undo.some(kb => this.matchKeybind(evt, kb))) {
+                evt.preventDefault();
+                // Restore the last changed mark
+                await this.restoreLastChangedMark();
+                // Refresh the modal list
+                chooser.values = this.getMarks();
+                chooser.setSuggestions(chooser.values);
             } else if (availableRegisters.has(evt.key)) {
                 const letter = evt.key.toUpperCase();
                 let mark = this.plugin.marks.find(m => m.letter.toUpperCase() === letter);
@@ -201,6 +200,7 @@ export class MarkListModal extends SuggestModal<Mark> {
             this.goToMark(mark);
         } else if (this.mode === 'delete') {
             // Delete the mark
+            // TODO: maybe change this to mark paramater rather than mark.letter in order to have consistent contract for this level of mark processing
             await this.deleteMark(mark.letter);
         }
     }
@@ -294,6 +294,26 @@ export class MarkListModal extends SuggestModal<Mark> {
         new Notice(`Deleted mark '${letter}'`);
     };
 
+    async restoreLastChangedMark(){
+        // Undo the last changed mark
+        if (this.plugin.lastChangedMark) {
+            const lastMark = {...this.plugin.lastChangedMark};
+            const markToSwap = this.plugin.marks.find(m => m.letter === lastMark.letter);
+            const marksWithoutDiscarded = this.plugin.marks.filter(m => m.letter !== lastMark.letter);
+
+            if (markToSwap) {
+                this.plugin.saveLastChangedMark(markToSwap);
+            }
+
+            marksWithoutDiscarded.push({ letter: lastMark.letter, filePath: lastMark.filePath });
+            await this.plugin.saveMarks(marksWithoutDiscarded);
+            // await this.setNewOrOverwriteMark(lastMark);
+            new Notice(`Restored mark '${lastMark.letter}' to ${lastMark.filePath}`);
+        } else {
+            new Notice('No last changed mark to restore.');
+        }
+    }
+
     private prepareInstructionPanelElement(keybinds: Keybinds) {
         const instructions = document.createElement('div');
         instructions.addClass('vim-marks-instructions');
@@ -304,9 +324,11 @@ export class MarkListModal extends SuggestModal<Mark> {
             <span>${formatKeys(keybinds.up)} : Up</span>
             <span>${formatKeys(keybinds.down)} : Down</span>
             <span>${formatKeys(keybinds.delete)} : Delete</span>
-            <span><kbd>A-Z</kbd> : Jump/Set</span>
+            <span>${formatKeys(keybinds.undo)} : Undo last changed mark</span>
+            <span><kbd>A-Z</kbd> : Jump/Set/Delete</span>
             <span><kbd>Enter</kbd> : Confirm</span>
             <span><kbd>Esc</kbd> : Close</span>
+
         `;
         return instructions;
     }

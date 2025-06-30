@@ -8,6 +8,7 @@ export interface Settings {
     markListUp?: string;
     markListDown?: string;
     markListSelect?: string;
+    markChangeUndo?: string;
     openMarkInNewTab?: boolean; // If true, open mark in new tab, else in current tab
     markListDelete?: string;
     registerList: string; // All letters that should be used as registers
@@ -22,4 +23,5 @@ export interface Keybinds {
     up: string[];
     down: string[];
     delete: string[];
+    undo: string[];
 }
