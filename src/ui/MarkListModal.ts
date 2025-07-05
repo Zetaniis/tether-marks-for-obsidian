@@ -2,7 +2,7 @@ import { App, TFile, Notice, SuggestModal, MarkdownView, Platform, WorkspaceLeaf
 import VimMarksImpl from '../main';
 import { Keybinds, Mark } from '../types/index';
 import { defaultKeybinds, defaultKeybindsMac, modalInstructionElClass, modalMarkFilepathClass, modalMarkLetterClass, Mode, placeholderMessages } from '../utils/defaultValues';
-import { findFirstUnusedRegister, getSortedAndFilteredMarks, removeGapsForHarpoonMarks, sortMarksAlphabetically } from '../utils/marks';
+import { findFirstUnusedRegister, getMarkBySign, getSortedAndFilteredMarks, removeGapsForHarpoonMarks, sortMarksAlphabetically } from '../utils/marks';
 
 
 export class MarkListModal extends SuggestModal<Mark> {
@@ -150,17 +150,16 @@ export class MarkListModal extends SuggestModal<Mark> {
                 chooser.values = this.getMarks();
                 chooser.setSuggestions(chooser.values);
             } else if (availableRegisters.has(evt.key)) {
-                const letter = evt.key.toUpperCase();
-                let mark = this.plugin.marks.find(m => m.sign.toUpperCase() === letter);
+                let mark = getMarkBySign(this.plugin.marks, evt.key);
                 if (this.mode === 'set') {
-                    if (!mark) {
+                    if (mark == null) {
                         // Create a new mark for this letter
                         const file = this.app.workspace.getActiveFile();
                         if (!file) {
                             new Notice('No active file to mark.');
                             return;
                         }
-                        mark = { sign: letter, filePath: file.path };
+                        mark = { sign: evt.key.toUpperCase(), filePath: file.path };
                     }
                     evt.preventDefault();
                     await this.onChooseSuggestion(mark, evt);
@@ -287,7 +286,9 @@ export class MarkListModal extends SuggestModal<Mark> {
         const instructions = document.createElement('div');
         instructions.addClass(modalInstructionElClass);
         // Helper to format keybinds for display
-        const formatKeys = (keys: string[]) => keys.map(k => `<kbd>${k.replace('cmd', '⌘').replace('ctrl', 'Ctrl').replace('alt', 'Alt').replace('shift', 'Shift')}</kbd>`).join('/');
+        const formatKeys = (keys: string[]) => keys.map(
+            k => `<kbd>${k.replace('cmd', '⌘').replace('ctrl', 'Ctrl').replace('alt', 'Alt').replace('shift', 'Shift')}</kbd>`
+        ).join('/');
 
         instructions.innerHTML = `
             <span>${formatKeys(keybinds.up)} : Up</span>

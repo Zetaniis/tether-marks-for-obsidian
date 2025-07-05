@@ -1,8 +1,8 @@
 import { Settings } from '../types/index';
 import { Mark } from '../types/index';
 
-export function findFirstUnusedRegister(marks: Mark[], harpoonRegisters: string[]): string | null {
-    for (const reg of harpoonRegisters) {
+export function findFirstUnusedRegister(marks: Mark[], registers: string[]): string | null {
+    for (const reg of registers) {
         // if register not used already, then use it
         // console.log('Checking register:', reg);
         if (!(marks.map(m => m.sign.toLowerCase()).contains(reg.toLowerCase()))) {
@@ -10,6 +10,10 @@ export function findFirstUnusedRegister(marks: Mark[], harpoonRegisters: string[
         }
     }
     return null;
+}
+
+export function getMarkBySign(marks : Mark[], sign : string) : Mark | undefined {
+    return marks.find(m => m.sign.toUpperCase() === sign.toUpperCase());
 }
 
 export function sortMarksAlphabetically(marks: Mark[]) {
