@@ -2,7 +2,7 @@ import { App, TFile, Notice, SuggestModal, MarkdownView, Platform, WorkspaceLeaf
 import VimMarksImpl from '../main';
 import { Keybinds, Mark } from '../types/index';
 import { defaultKeybinds, defaultKeybindsMac, modalInstructionElClass, modalMarkFilepathClass, modalMarkLetterClass, Mode, placeholderMessages } from '../utils/defaultValues';
-import { findFirstUnusedRegister, getSortedAndFilteredMarks, sortMarksAlphabetically } from '../utils/marks';
+import { findFirstUnusedRegister, getSortedAndFilteredMarks, removeGapsForHarpoonMarks, sortMarksAlphabetically } from '../utils/marks';
 
 
 export class MarkListModal extends SuggestModal<Mark> {
@@ -31,7 +31,7 @@ export class MarkListModal extends SuggestModal<Mark> {
     }
 
     renderSuggestion(mark: Mark, el: HTMLElement) {
-        el.createEl('span', { text: mark.letter, cls: modalMarkLetterClass });
+        el.createEl('span', { text: mark.sign, cls: modalMarkLetterClass });
         el.createEl('span', { text: mark.filePath, cls: modalMarkFilepathClass });
         el.addEventListener('click', async (evt) => {
             await this.onChooseSuggestion(mark, evt);
@@ -101,7 +101,7 @@ export class MarkListModal extends SuggestModal<Mark> {
 
         const keybinds = this.prepareKeybinds();
 
-        // --- Prompt instructions panel ---
+        // Prompt instructions panel
         const instructions = this.prepareModalInstructionElement(keybinds);
 
         // Insert instructions panel at the bottom of the modal
@@ -151,7 +151,7 @@ export class MarkListModal extends SuggestModal<Mark> {
                 chooser.setSuggestions(chooser.values);
             } else if (availableRegisters.has(evt.key)) {
                 const letter = evt.key.toUpperCase();
-                let mark = this.plugin.marks.find(m => m.letter.toUpperCase() === letter);
+                let mark = this.plugin.marks.find(m => m.sign.toUpperCase() === letter);
                 if (this.mode === 'set') {
                     if (!mark) {
                         // Create a new mark for this letter
@@ -160,7 +160,7 @@ export class MarkListModal extends SuggestModal<Mark> {
                             new Notice('No active file to mark.');
                             return;
                         }
-                        mark = { letter, filePath: file.path };
+                        mark = { sign: letter, filePath: file.path };
                     }
                     evt.preventDefault();
                     await this.onChooseSuggestion(mark, evt);
@@ -196,10 +196,10 @@ export class MarkListModal extends SuggestModal<Mark> {
             new Notice('No active file to mark.');
             return;
         }
-        const marks = this.plugin.marks.filter((m) => m.letter !== mark.letter);
-        marks.push({ letter: mark.letter, filePath: file.path });
+        const marks = this.plugin.marks.filter((m) => m.sign !== mark.sign);
+        marks.push({ sign: mark.sign, filePath: file.path });
         await this.plugin.saveMarks(marks);
-        new Notice(`Set mark '${mark.letter}' to ${file.name}`);
+        new Notice(`Set mark '${mark.sign}' to ${file.name}`);
     }
 
     goToMark(mark: Mark) {
@@ -240,67 +240,44 @@ export class MarkListModal extends SuggestModal<Mark> {
             }
         }
         else {
-            new Notice(`File not found for mark '${mark.letter}. The file may have been deleted, moved or renamed.`);
+            new Notice(`File not found for mark '${mark.sign}. The file may have been deleted, moved or renamed.`);
         }
     }
 
 
     private async deleteMark(mark: Mark) {
         const cMark = { ...mark };
-        this.plugin.marks = this.plugin.marks.filter(m => m.letter !== cMark.letter);
+        const filteredMarks = this.plugin.marks.filter(m => m.sign !== cMark.sign);
+        await this.plugin.saveMarks(filteredMarks);
 
         if (this.plugin.settings.harpoonRegisterGapRemoval) {
             this.removeGapsForHarpoonMarks();
         }
 
-        await this.plugin.saveMarks(this.plugin.marks);
-        new Notice(`Deleted mark '${cMark.letter}'`);
+        new Notice(`Deleted mark '${cMark.sign}'`);
     };
 
-    removeGapsForHarpoonMarks() {
-        new Notice("Not implemented");
-        // removing gaps in harpoon marks - not working for now
-        //     const harpoonRegisters = this.plugin.settings.harpoonRegisterList.split('');
-        //     // Find the index of the deleted mark's letter
-        //     // let index = harpoonRegisters.indexOf(letter.toLowerCase());
-        //     // if (index !== -1) {
-        //     let leftCur = 0;
-        //     let rightCur = 1;
-
-        //     while (rightCur < harpoonRegisters.length) {
-        //         console.log(leftCur, rightCur, harpoonRegisters.length);
-        //         // const currentMarkInd = this.plugin.marks.findIndex(el => el.letter === harpoonRegisters[index].toLowerCase());
-        //         const nextMarkInd = this.plugin.marks.findIndex(el => el.letter.toLowerCase() === harpoonRegisters[rightCur].toLowerCase());
-
-        //         if (!(nextMarkInd === -1)) {
-        //             const updatedMark: Mark = { letter: harpoonRegisters[leftCur], filePath: this.plugin.marks[nextMarkInd].filePath };
-        //             const marks = this.plugin.marks.filter((m) => m.letter !== updatedMark.letter || m.letter !== this.plugin.marks[nextMarkInd].letter);
-        //             marks.push(updatedMark);
-        //             console.log('Updated marks:', marks);
-        //             this.plugin.marks = marks;
-        //             leftCur++;
-        //         }
-        //         rightCur++;
-        //         // }
-        // }
-
+    async removeGapsForHarpoonMarks() {
+        const harpoonRegisters = this.plugin.settings.harpoonRegisterList.split('');
+        const marks = removeGapsForHarpoonMarks(this.plugin.marks, harpoonRegisters);
+        await this.plugin.saveMarks(marks);
     }
 
     async restoreLastChangedMark() {
         // Undo the last changed mark
         if (this.plugin.lastChangedMark) {
             const markToRestore = { ...this.plugin.lastChangedMark };
-            const markToDiscard = this.plugin.marks.find(m => m.letter === markToRestore.letter);
-            const marksWithoutDiscarded = this.plugin.marks.filter(m => m.letter !== markToRestore.letter);
+            const markToDiscard = this.plugin.marks.find(m => m.sign === markToRestore.sign);
+            const marksWithoutDiscarded = this.plugin.marks.filter(m => m.sign !== markToRestore.sign);
 
             if (markToDiscard) {
                 this.plugin.saveLastChangedMark(markToDiscard);
             }
 
-            marksWithoutDiscarded.push({ letter: markToRestore.letter, filePath: markToRestore.filePath });
+            marksWithoutDiscarded.push({ sign: markToRestore.sign, filePath: markToRestore.filePath });
             await this.plugin.saveMarks(marksWithoutDiscarded);
             // await this.setNewOrOverwriteMark(lastMark);
-            new Notice(`Restored mark '${markToRestore.letter}' to ${markToRestore.filePath}`);
+            new Notice(`Restored mark '${markToRestore.sign}' to ${markToRestore.filePath}`);
         } else {
             new Notice('No last changed mark to restore.');
         }
@@ -384,7 +361,7 @@ export class MarkListModal extends SuggestModal<Mark> {
             new Notice('Harpoon registers are full, cannot add more marks.');
         }
         else {
-            this.setNewOrOverwriteMark({ letter: reg.toUpperCase(), filePath: this.app.workspace.getActiveFile()?.path || '' });
+            this.setNewOrOverwriteMark({ sign: reg.toUpperCase(), filePath: this.app.workspace.getActiveFile()?.path || '' });
         }
     }
 

@@ -99,16 +99,16 @@ export class SettingsTab extends PluginSettingTab {
                 })
             );
 
-        // new Setting(containerEl)
-        //     .setName('Harpoon remove gaps in bewteen marks')
-        //     .setDesc('If enabled, the files paths in harpoon registers will be pushed to the first free register (eg. in case of deletion of a filepath). TODO: better description')
-        //     .addToggle(toggle => toggle
-        //         .setValue(this.plugin.settings.harpoonRegisterGapRemoval ?? ds.harpoonRegisterGapRemoval)
-        //         .onChange(async (value) => {
-        //             this.plugin.settings.harpoonRegisterGapRemoval = value;
-        //             await this.plugin.saveSettings();
-        //         })
-        //     );
+        new Setting(containerEl)
+            .setName('Remove gaps in bewteen harpoon marks')
+            .setDesc('If enabled, harpoon marks will be shifted to the left for every gap (register sign with no mark) based on the order of the harpoon register list on deleting a mark.')
+            .addToggle(toggle => toggle
+                .setValue(this.plugin.settings.harpoonRegisterGapRemoval ?? ds.harpoonRegisterGapRemoval)
+                .onChange(async (value) => {
+                    this.plugin.settings.harpoonRegisterGapRemoval = value;
+                    await this.plugin.saveSettings();
+                })
+            );
 
 
         // Add keyboard shortcut settings

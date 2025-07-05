@@ -34,7 +34,7 @@ export const defaultSettings = {
     registerSortByList: true,
     harpoonRegisterList: 'qwer',
     harpoonRegisterSortByList: true,
-    harpoonRegisterGapRemoval: false,
+    harpoonRegisterGapRemoval: true,
     experimentalGoto: false,
 };
 

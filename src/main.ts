@@ -64,7 +64,7 @@ export default class VimMarksImpl extends Plugin {
     }
 
     onunload() {
+        // Potential cleanup
         console.log('VimMarksImpl plugin unloaded');
-        // Cleanup if necessary
     }
 }

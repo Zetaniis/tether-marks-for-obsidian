@@ -1,5 +1,5 @@
 export interface Mark {
-    letter: string;
+    sign: string;
     filePath: string;
 }
 
