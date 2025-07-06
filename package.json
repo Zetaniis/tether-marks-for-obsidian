@@ -1,7 +1,7 @@
 {
   "name": "vim-marks-impl",
   "version": "1.0.0",
-  "description": "A plugin for Obsidian that mimics Vim global marks functionality, allowing users to set file references within letter registers and navigate to them.",
+  "description": "A plugin for Obsidian that mimics Vim global marks functionality, allowing users to set file references within key symbol registers and navigate to them.",
   "main": "dist/main.js",
   "scripts": {
     "watch": "tsc --watch",

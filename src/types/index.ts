@@ -1,5 +1,5 @@
 export interface Mark {
-    sign: string;
+    symbol: string;
     filePath: string;
 }
 
@@ -11,9 +11,9 @@ export interface Settings {
     markChangeUndo?: string;
     openMarkInNewTab?: boolean; // If true, open mark in new tab, else in current tab
     markListDelete?: string;
-    registerList: string; // All letters that should be used as registers
-    registerSortByList?: boolean; // If true, sort registers by the order of the letters in the registerList
-    harpoonRegisterList: string; // All letters that should be used as registers for the Harpoon feature
+    registerList: string; // All key symbols that should be used as registers
+    registerSortByList?: boolean; // If true, sort registers by the order of the key symbols in the registerList
+    harpoonRegisterList: string; // All key symbols that should be used as registers for the Harpoon feature
     harpoonRegisterSortByList?: boolean;
     harpoonRegisterGapRemoval?: boolean;
     experimentalGoto: boolean;

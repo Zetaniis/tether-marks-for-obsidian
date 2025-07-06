@@ -5,31 +5,31 @@ export function findFirstUnusedRegister(marks: Mark[], registers: string[]): str
     for (const reg of registers) {
         // if register not used already, then use it
         // console.log('Checking register:', reg);
-        if (!(marks.map(m => m.sign).includes(reg))) {
+        if (!(marks.map(m => m.symbol).includes(reg))) {
             return reg;
         }
     }
     return null;
 }
 
-export function getMarkBySign(marks : Mark[], sign : string) : Mark | undefined {
-    return marks.find(m => m.sign === sign);
+export function getMarkBySymbol(marks : Mark[], symbol : string) : Mark | undefined {
+    return marks.find(m => m.symbol === symbol);
 }
 
 export function sortMarksAlphabetically(marks: Mark[]) {
-    marks.sort((a, b) => a.sign.localeCompare(b.sign))
+    marks.sort((a, b) => a.symbol.localeCompare(b.symbol))
 }
 
 export function getSortedAndFilteredMarks(marks: Mark[], isHarpoonMode: boolean, settings: Settings): Mark[] {
     const availableRegisters = new Set((!isHarpoonMode ? settings.registerList : settings.harpoonRegisterList).split(''));
-    const filteredMarks: Mark[] = marks.filter(el => availableRegisters.has(el.sign));
+    const filteredMarks: Mark[] = marks.filter(el => availableRegisters.has(el.symbol));
     if (!isHarpoonMode && settings.registerSortByList) {
-        // Sort marks by the order of the letters in the register list
+        // Sort marks by the order of the key symbols in the register list
         const registerList = settings.registerList;
         sortMarksBySettingsRegisterOrder(filteredMarks, registerList);
     }
     else if (isHarpoonMode && settings.harpoonRegisterSortByList) {
-        // Sort marks by the order of the letters in the harpoon register list
+        // Sort marks by the order of the key symbols in the harpoon register list
         const registerList = settings.harpoonRegisterList;
         sortMarksBySettingsRegisterOrder(filteredMarks, registerList);
     }
@@ -40,8 +40,8 @@ export function getSortedAndFilteredMarks(marks: Mark[], isHarpoonMode: boolean,
 }
 
 export function sortMarksBySettingsRegisterOrder(marks: Mark[], registers: string | string[]) {
-    const registerOrder = new Map([...registers].map((letter, index) => [letter, index]));
-    marks.sort((a, b) => (registerOrder.get(a.sign) ?? Infinity) - (registerOrder.get(b.sign) ?? Infinity));
+    const registerOrder = new Map([...registers].map((symbol, index) => [symbol, index]));
+    marks.sort((a, b) => (registerOrder.get(a.symbol) ?? Infinity) - (registerOrder.get(b.symbol) ?? Infinity));
 }
 
 export function removeGapsForHarpoonMarks(marksToCopy: Mark[], harpoonRegisters: string[]): Mark[] {
@@ -51,12 +51,12 @@ export function removeGapsForHarpoonMarks(marksToCopy: Mark[], harpoonRegisters:
     let rightCur = 0;
 
     while (rightCur < harpoonRegisters.length) {
-        const markEl = marks.find(el => el.sign === harpoonRegisters[rightCur]);
+        const markEl = marks.find(el => el.symbol === harpoonRegisters[rightCur]);
 
         if (markEl !== undefined) {
-            const signToSetTo = harpoonRegisters[leftCur];
-            let filteredMarks = marks.filter(el => el.sign !== harpoonRegisters[leftCur]);
-            filteredMarks.push({ sign: signToSetTo, filePath: markEl.filePath })
+            const symbolToSetTo = harpoonRegisters[leftCur];
+            let filteredMarks = marks.filter(el => el.symbol !== harpoonRegisters[leftCur]);
+            filteredMarks.push({ symbol: symbolToSetTo, filePath: markEl.filePath })
             marks = filteredMarks;
             leftCur += 1;
         }
@@ -64,7 +64,7 @@ export function removeGapsForHarpoonMarks(marksToCopy: Mark[], harpoonRegisters:
     }
 
     while (leftCur < harpoonRegisters.length) {
-        marks = marks.filter(el => el.sign !== harpoonRegisters[leftCur]);
+        marks = marks.filter(el => el.symbol !== harpoonRegisters[leftCur]);
         leftCur += 1;
     }
 

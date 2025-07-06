@@ -39,5 +39,5 @@ export const defaultSettings = {
 };
 
 export const modalInstructionElClass = 'modal-instruction-el';
-export const modalMarkLetterClass = 'mark-letter';
+export const modalMarkSymbolClass = 'mark-symbol';
 export const modalMarkFilepathClass = 'mark-file-path';

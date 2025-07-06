@@ -33,7 +33,7 @@
     align-items: center;
 }
 
-.prompt-results > .suggestion-item > .mark-letter {
+.prompt-results > .suggestion-item > .mark-symbol {
     /* min-width: 2.5em; */
     max-width: 1.5em;
     /* width: 0.1rem; */

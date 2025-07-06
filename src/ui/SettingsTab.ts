@@ -17,7 +17,7 @@ export class SettingsTab extends PluginSettingTab {
         const ds = defaultSettings;
 
         containerEl.createEl('h4', { text: 'General' });
-        this.createRegisterListSetting(containerEl, "Register list", ds.registerList, 'All letters that should be used as registers. Make sure to only input signs that you can input with one click of a keyboard button.', 'registerList')
+        this.createRegisterListSetting(containerEl, "Register list", ds.registerList, 'All key symbols that should be used as registers. Make sure to only input key symbols that you can input with one click of a keyboard button.', 'registerList')
             .addExtraButton((btn) => {
                 btn
                     .setIcon('refresh-ccw')
@@ -32,7 +32,7 @@ export class SettingsTab extends PluginSettingTab {
 
         new Setting(containerEl)
             .setName('Sort all registers by register list')
-            .setDesc('If enabled, the the registers will be sorted by the order of the letters in the register list. If disabled, the sort will be alphabetical according to current locale.')
+            .setDesc('If enabled, the the registers will be sorted by the order of the key symbols in the register list. If disabled, the sort will be alphabetical according to current locale.')
             .addToggle(toggle => toggle
                 .setValue(this.plugin.settings.registerSortByList ?? ds.registerSortByList)
                 .onChange(async (value) => {
@@ -75,7 +75,7 @@ export class SettingsTab extends PluginSettingTab {
             );
 
         containerEl.createEl('h4', { text: 'Harpoon registers' });
-        this.createRegisterListSetting(containerEl, "Harpoon register list", ds.harpoonRegisterList, 'All letters that should be used as registers for the Harpoon feature. Leftmost letter will be the first register to be used. Make sure to only input signs that you can input with one click of a keyboard button.', 'harpoonRegisterList')
+        this.createRegisterListSetting(containerEl, "Harpoon register list", ds.harpoonRegisterList, 'All key symbols that should be used as registers for the Harpoon feature. Leftmost key symbol will be the first register to be used. Make sure to only input key symbols that you can input with one click of a keyboard button.', 'harpoonRegisterList')
             .addExtraButton((btn) => {
                 btn
                     .setIcon('refresh-ccw')
@@ -90,7 +90,7 @@ export class SettingsTab extends PluginSettingTab {
 
         new Setting(containerEl)
             .setName('Sort harpoon registers by harpoon register list')
-            .setDesc('If enabled, the harpoon registers will be sorted by the order of the letters in the harpoon register list. If disabled, the sort will be alphabetical.')
+            .setDesc('If enabled, the harpoon registers will be sorted by the order of the key symbols in the harpoon register list. If disabled, the sort will be alphabetical.')
             .addToggle(toggle => toggle
                 .setValue(this.plugin.settings.harpoonRegisterSortByList ?? ds.harpoonRegisterSortByList)
                 .onChange(async (value) => {
@@ -101,7 +101,7 @@ export class SettingsTab extends PluginSettingTab {
 
         new Setting(containerEl)
             .setName('Remove gaps in bewteen harpoon marks')
-            .setDesc('If enabled, harpoon marks will be shifted to the left for every gap (register sign with no mark) based on the order of the harpoon register list on deleting a mark.')
+            .setDesc('If enabled, harpoon marks will be shifted to the left for every gap (register symbol with no mark) based on the order of the harpoon register list on deleting a mark.')
             .addToggle(toggle => toggle
                 .setValue(this.plugin.settings.harpoonRegisterGapRemoval ?? ds.harpoonRegisterGapRemoval)
                 .onChange(async (value) => {

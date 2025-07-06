@@ -2,7 +2,7 @@
   "id": "vim-marks-impl",
   "name": ".Vim Marks Implementation",
   "version": "1.0.0",
-  "description": "A plugin that mimics Vim global marks functionality, allowing users to set file references within letter registers and navigate to them.",
+  "description": "A plugin that mimics Vim global marks functionality, allowing users to set file references within key symbol registers and navigate to them.",
   "author": "Your Name",
   "minAppVersion": "0.12.0",
   "main": "main.js",
