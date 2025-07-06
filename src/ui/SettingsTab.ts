@@ -32,7 +32,7 @@ export class SettingsTab extends PluginSettingTab {
 
         new Setting(containerEl)
             .setName('Sort all registers by register list')
-            .setDesc('If enabled, the the registers will be sorted by the order of the letters in the register list. If disabled, the sort will be alphabetical.')
+            .setDesc('If enabled, the the registers will be sorted by the order of the letters in the register list. If disabled, the sort will be alphabetical according to current locale.')
             .addToggle(toggle => toggle
                 .setValue(this.plugin.settings.registerSortByList ?? ds.registerSortByList)
                 .onChange(async (value) => {
@@ -122,15 +122,15 @@ export class SettingsTab extends PluginSettingTab {
 
     }
 
+    // use only for string values from Settings type
     createShortcutSetting(containerEl: HTMLElement, name: string, defaultValue: string, desc: string, key: keyof Settings) {
         new Setting(containerEl)
             .setName(name)
             .setDesc(desc)
             .addText(text => text
-                .setValue((this.plugin.settings as any)[key] || defaultValue)
+                .setValue(String(this.plugin.settings[key] ?? defaultValue))
                 .onChange(async (value) => {
                     (this.plugin.settings as any)[key] = value;
-                    console.log(`Setting ${key} to |${value}|`);
                     await this.plugin.saveSettings();
                 }));
     }
@@ -140,7 +140,7 @@ export class SettingsTab extends PluginSettingTab {
             .setName(name)
             .setDesc(desc)
             .addText(text => text
-                .setValue((this.plugin.settings as any)[key] || defaultValue)
+                .setValue(String(this.plugin.settings[key] ?? defaultValue))
                 .onChange(async (value) => {
                     (this.plugin.settings as any)[key] = value;
                     await this.plugin.saveSettings();
