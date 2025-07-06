@@ -1,8 +1,10 @@
-import { App, TFile, Notice, SuggestModal, MarkdownView, Platform, WorkspaceLeaf } from 'obsidian';
+import { App, TFile, Notice, SuggestModal, MarkdownView, Platform, WorkspaceLeaf, TAbstractFile } from 'obsidian';
 import VimMarksImpl from '../main';
 import { Keybinds, Mark } from '../types/index';
-import { defaultKeybinds, defaultKeybindsMac, modalInstructionElClass, modalMarkFilepathClass, modalMarkSymbolClass, Mode, placeholderMessages } from '../utils/defaultValues';
-import { findFirstUnusedRegister, getMarkBySymbol, getSortedAndFilteredMarks, removeGapsForHarpoonMarks, sortMarksAlphabetically } from '../utils/marks';
+import { modalDefaultKeybinds, modalDefaultKeybindsMac, modalInstructionElClass, modalMarkFilepathClass, modalMarkSymbolClass, Mode, modalPlaceholderMessages } from '../utils/defaultValues';
+import { findFirstUnusedRegister, getMarkBySymbol, getSortedAndFilteredMarks, removeGapsForHarpoonMarks, restoreLastChangedMark, setNewOrOverwriteMark, sortMarksAlphabetically } from '../utils/marks';
+import { matchKeybind, prepareKeybinds } from '../utils/keybinds';
+import { getAllOpenedFilesExperimental, navigateToOpenFileByPath, openNewFile as openNewFileByPath } from '../utils/obsidianUtils';
 
 
 export class MarkListModal extends SuggestModal<Mark> {
@@ -16,17 +18,13 @@ export class MarkListModal extends SuggestModal<Mark> {
         this.plugin = plugin;
         this.mode = mode;
         // this.marks = plugin.marks;
-        this.setPlaceholder(placeholderMessages[this.mode]);
+        this.setPlaceholder(modalPlaceholderMessages[this.mode]);
         // this.setInstructions([{command: 'vim-marks:mark-list', purpose: "asdf"}]);
         this.isHarpoonMode = isHarpoonMode; // Default to false, can be set externally
     }
 
     getSuggestions(query: string): Mark[] {
         // No search input, always show all marks
-        return this.getMarks();
-    }
-
-    getMarks(): Mark[] {
         return getSortedAndFilteredMarks(this.plugin.marks, this.isHarpoonMode, this.plugin.settings);
     }
 
@@ -39,58 +37,6 @@ export class MarkListModal extends SuggestModal<Mark> {
         });
     }
 
-
-    getAllOpenedFilesExperimental(): any {
-        // xD
-        // @ts-ignore
-        return this.app.workspace.getLayout().main?.children[0].children
-
-        // const app = this.app;
-        // const files = new Set<TFile>();
-        // const layout = app.workspace.getLayout();
-
-        // function collectFiles(node: any) {
-        //     if (!node) return;
-        //     if (node.type === 'leaf' && node.state?.file) {
-        //         const file = app.vault.getAbstractFileByPath(node.state.file);
-        //         if (file instanceof TFile) files.add(file);
-        //     }
-        //     if (node.children && Array.isArray(node.children)) {
-        //         for (const child of node.children) collectFiles(child);
-        //     }
-        // }
-
-        // // Traverse all possible roots
-        // for (const key of ['main', 'left', 'right', 'center', 'popout']) {
-        //     if (layout[key]) collectFiles(layout[key]);
-        // }
-
-        // return Array.from(files);
-    }
-
-    // Utility to prepare keybinds object
-    private prepareKeybinds() {
-        let keybinds: Keybinds = (!Platform.isMacOS) ? { ...defaultKeybinds } : { ...defaultKeybindsMac };
-
-        if (this.plugin.settings.markListUp) {
-            keybinds.up = [this.plugin.settings.markListUp];
-        }
-
-        if (this.plugin.settings.markListDown) {
-            keybinds.down = [this.plugin.settings.markListDown];
-        }
-
-        if (this.plugin.settings.markListDelete) {
-            keybinds.delete = [this.plugin.settings.markListDelete];
-        }
-
-        if (this.plugin.settings.markChangeUndo) {
-            keybinds.undo = [this.plugin.settings.markChangeUndo];
-        }
-
-        return keybinds;
-    }
-
     // Override to hide the input box
     onOpen() {
         super.onOpen();
@@ -99,7 +45,7 @@ export class MarkListModal extends SuggestModal<Mark> {
         }
         this.modalEl.addClass('marks-modal');
 
-        const keybinds = this.prepareKeybinds();
+        const keybinds = prepareKeybinds(Platform.isMacOS, this.plugin.settings);
 
         // Prompt instructions panel
         const instructions = this.prepareModalInstructionElement(keybinds);
@@ -111,18 +57,51 @@ export class MarkListModal extends SuggestModal<Mark> {
         window.addEventListener('keydown', this._keyHandler, true);
     }
 
+    onClose() {
+        // Remove instructions panel if present
+        const instructions = this.modalEl.querySelector("." + modalInstructionElClass);
+        if (instructions) instructions.remove();
+
+        if (this._keyHandler) {
+            window.removeEventListener('keydown', this._keyHandler, true);
+            this._keyHandler = undefined;
+        }
+        super.onClose();
+    }
+
+    private prepareModalInstructionElement(keybinds: Keybinds) {
+        const instructions = document.createElement('div');
+        instructions.addClass(modalInstructionElClass);
+        // Helper to format keybinds for display
+        const formatKeys = (keys: string[]) => keys.map(
+            k => `<kbd>${k.replace('cmd', '⌘').replace('ctrl', 'Ctrl').replace('alt', 'Alt').replace('shift', 'Shift')}</kbd>`
+        ).join('/');
+
+        instructions.innerHTML = `
+            <span>${formatKeys(keybinds.up)} : Up</span>
+            <span>${formatKeys(keybinds.down)} : Down</span>
+            <span>${formatKeys(keybinds.delete)} : Delete</span>
+            <span>${formatKeys(keybinds.undo)} : Undo last changed mark</span>
+            <span><kbd>Symbol</kbd> : Jump/Set/Delete</span>
+            <span><kbd>Enter</kbd> : Confirm</span>
+            <span><kbd>Esc</kbd> : Close</span>
+
+        `;
+        return instructions;
+    }
+
     getModalKeyHandler(keybinds: Keybinds) {
         return async (evt: KeyboardEvent) => {
             const availableRegisters = new Set((!this.isHarpoonMode ? this.plugin.settings.registerList : this.plugin.settings.harpoonRegisterList).split(''));
             // @ts-ignore
             const chooser = this.chooser;
-            if (keybinds.up.some(kb => this.matchKeybind(evt, kb))) {
+            if (keybinds.up.some(kb => matchKeybind(evt, kb))) {
                 evt.preventDefault();
                 this.moveSelection(-1);
-            } else if (keybinds.down.some(kb => this.matchKeybind(evt, kb))) {
+            } else if (keybinds.down.some(kb => matchKeybind(evt, kb))) {
                 evt.preventDefault();
                 this.moveSelection(1);
-            } else if (keybinds.delete.some(kb => this.matchKeybind(evt, kb))) {
+            } else if (keybinds.delete.some(kb => matchKeybind(evt, kb))) {
                 evt.preventDefault();
                 // Delete the currently selected mark
                 const prevIdx = chooser.selectedItem;
@@ -130,7 +109,7 @@ export class MarkListModal extends SuggestModal<Mark> {
                 if (selected) {
                     await this.deleteMark(selected);
                     // Refresh the modal list
-                    chooser.values = this.getMarks();
+                    chooser.values = getSortedAndFilteredMarks(this.plugin.marks, this.isHarpoonMode, this.plugin.settings);
                     chooser.setSuggestions(chooser.values);
                     // Preserve selection index
                     let newIdx = prevIdx;
@@ -142,12 +121,12 @@ export class MarkListModal extends SuggestModal<Mark> {
                 // else if (keybinds.undo.some(kb => this.matchKeybind(evt, kb))) {
                 // }
             }
-            else if (keybinds.undo.some(kb => this.matchKeybind(evt, kb))) {
+            else if (keybinds.undo.some(kb => matchKeybind(evt, kb))) {
                 evt.preventDefault();
                 // Restore the last changed mark
                 await this.restoreLastChangedMark();
                 // Refresh the modal list
-                chooser.values = this.getMarks();
+                chooser.values = getSortedAndFilteredMarks(this.plugin.marks, this.isHarpoonMode, this.plugin.settings);
                 chooser.setSuggestions(chooser.values);
             } else if (availableRegisters.has(evt.key)) {
                 let mark = getMarkBySymbol(this.plugin.marks, evt.key);
@@ -189,132 +168,6 @@ export class MarkListModal extends SuggestModal<Mark> {
         }
     }
 
-    async setNewOrOverwriteMark(mark: Mark) {
-        const file = this.app.workspace.getActiveFile();
-        if (!file) {
-            new Notice('No active file to mark.');
-            return;
-        }
-        const marks = this.plugin.marks.filter((m) => m.symbol !== mark.symbol);
-        marks.push({ symbol: mark.symbol, filePath: file.path });
-        await this.plugin.saveMarks(marks);
-        new Notice(`Set mark '${mark.symbol}' to ${file.name}`);
-    }
-
-    goToMark(mark: Mark) {
-        const file = this.app.vault.getAbstractFileByPath(mark.filePath);
-        if (file instanceof TFile) {
-            if (this.plugin.settings.experimentalGoto) {
-                const openedFiles = this.getAllOpenedFilesExperimental()
-                // console.log('Opened files:', openedFiles);
-                for (const openedFile of openedFiles) {
-                    if (openedFile.type == 'leaf' && openedFile.state.state.file === mark.filePath) {
-                        // If the file is already open, switch to it
-                        const leaf = this.app.workspace.getLeafById(openedFile.id);
-                        // console.log('Found leaf for file:', openedFile.state.state.file, openedFile.id, leaf);
-                        if (leaf) {
-                            this.app.workspace.setActiveLeaf(leaf, { focus: true });
-                            return;
-                        }
-                    }
-                }
-            }
-            else {
-                // Check if the file is already open in a leaf
-                const leaves = this.app.workspace.getLeavesOfType('markdown');
-                // Check if the file is already open in a leaf // const leaves = this.app.workspace.getLeavesOfType('markdown');
-                for (const leaf of leaves) {
-                    const view = leaf.view;
-                    if (view instanceof MarkdownView && view.file && view.file.path === mark.filePath) {
-                        this.app.workspace.setActiveLeaf(leaf, { focus: true });
-                        return;
-                    }
-                }
-            }
-            // If not open, open it in the preferred tab
-            if (this.plugin.settings.openMarkInNewTab) {
-                this.app.workspace.getLeaf('tab').openFile(file);
-            } else {
-                this.app.workspace.getLeaf().openFile(file);
-            }
-        }
-        else {
-            new Notice(`File not found for mark '${mark.symbol}. The file may have been deleted, moved or renamed.`);
-        }
-    }
-
-
-    private async deleteMark(mark: Mark) {
-        const cMark = { ...mark };
-        const filteredMarks = this.plugin.marks.filter(m => m.symbol !== cMark.symbol);
-        await this.plugin.saveMarks(filteredMarks);
-
-        if (this.plugin.settings.harpoonRegisterGapRemoval) {
-            this.removeGapsForHarpoonMarks();
-        }
-
-        new Notice(`Deleted mark '${cMark.symbol}'`);
-    };
-
-    async removeGapsForHarpoonMarks() {
-        const harpoonRegisters = this.plugin.settings.harpoonRegisterList.split('');
-        const marks = removeGapsForHarpoonMarks(this.plugin.marks, harpoonRegisters);
-        await this.plugin.saveMarks(marks);
-    }
-
-    async restoreLastChangedMark() {
-        // Undo the last changed mark
-        if (this.plugin.lastChangedMark) {
-            const markToRestore = { ...this.plugin.lastChangedMark };
-            const markToDiscard = this.plugin.marks.find(m => m.symbol === markToRestore.symbol);
-            const marksWithoutDiscarded = this.plugin.marks.filter(m => m.symbol !== markToRestore.symbol);
-
-            if (markToDiscard) {
-                this.plugin.saveLastChangedMark(markToDiscard);
-            }
-
-            marksWithoutDiscarded.push({ symbol: markToRestore.symbol, filePath: markToRestore.filePath });
-            await this.plugin.saveMarks(marksWithoutDiscarded);
-            // await this.setNewOrOverwriteMark(lastMark);
-            new Notice(`Restored mark '${markToRestore.symbol}' to ${markToRestore.filePath}`);
-        } else {
-            new Notice('No last changed mark to restore.');
-        }
-    }
-
-    private prepareModalInstructionElement(keybinds: Keybinds) {
-        const instructions = document.createElement('div');
-        instructions.addClass(modalInstructionElClass);
-        // Helper to format keybinds for display
-        const formatKeys = (keys: string[]) => keys.map(
-            k => `<kbd>${k.replace('cmd', '⌘').replace('ctrl', 'Ctrl').replace('alt', 'Alt').replace('shift', 'Shift')}</kbd>`
-        ).join('/');
-
-        instructions.innerHTML = `
-            <span>${formatKeys(keybinds.up)} : Up</span>
-            <span>${formatKeys(keybinds.down)} : Down</span>
-            <span>${formatKeys(keybinds.delete)} : Delete</span>
-            <span>${formatKeys(keybinds.undo)} : Undo last changed mark</span>
-            <span><kbd>Symbol</kbd> : Jump/Set/Delete</span>
-            <span><kbd>Enter</kbd> : Confirm</span>
-            <span><kbd>Esc</kbd> : Close</span>
-
-        `;
-        return instructions;
-    }
-
-    onClose() {
-        // Remove instructions panel if present
-        const instructions = this.modalEl.querySelector("." + modalInstructionElClass);
-        if (instructions) instructions.remove();
-
-        if (this._keyHandler) {
-            window.removeEventListener('keydown', this._keyHandler, true);
-            this._keyHandler = undefined;
-        }
-        super.onClose();
-    }
-
     moveSelection(delta: number) {
         // Move the selection up or down by delta
         // this.chooser is SuggestModal's internal chooser
@@ -332,24 +185,51 @@ export class MarkListModal extends SuggestModal<Mark> {
         chooser.setSelectedItem(next, 0 as KeyboardEvent);
     }
 
-    matchKeybind(evt: KeyboardEvent, keybind: string): boolean {
-        // Parse keybind string like 'ctrl+shift+p', 'cmd+n', etc.
-        const parts = keybind.split('+').map(p => p.trim());
-        let required = { ctrl: false, shift: false, alt: false, meta: false, key: '' };
-        for (const part of parts) {
-            if (part === 'ctrl') required.ctrl = true;
-            else if (part === 'shift') required.shift = true;
-            else if (part === 'alt') required.alt = true;
-            else if (part === 'meta' || part === 'cmd' || part === 'win') required.meta = true;
-            else required.key = part;
+    async setNewOrOverwriteMark(mark: Mark) {
+        const file = this.app.workspace.getActiveFile();
+        if (!file) {
+            new Notice('No active file to mark.');
+            return;
         }
-        // Check modifiers
-        if (evt.ctrlKey !== required.ctrl) return false;
-        if (evt.shiftKey !== required.shift) return false;
-        if (evt.altKey !== required.alt) return false;
-        if (evt.metaKey !== required.meta) return false;
-        // Check key (case-insensitive)
-        return evt.key === required.key;
+        const marks = setNewOrOverwriteMark(this.plugin.marks, mark, file.path);
+        await this.plugin.saveMarks(marks);
+        new Notice(`Set mark '${mark.symbol}' to ${file.name}`);
+    }
+
+    goToMark(mark: Mark) {
+        const success = navigateToOpenFileByPath(mark.filePath, this.plugin.settings.experimentalGoto, this.app);
+        // If file not open, then open it in the preferred tab
+        if (!success) {
+            openNewFileByPath(mark.filePath, this.plugin.settings.openMarkInNewTab, this.app);
+        }
+    }
+
+    private async deleteMark(mark: Mark) {
+        const cMark = { ...mark };
+        const filteredMarks = this.plugin.marks.filter(m => m.symbol !== cMark.symbol);
+        await this.plugin.saveMarks(filteredMarks);
+
+        if (this.plugin.settings.harpoonRegisterGapRemoval) {
+            this.removeGapsForHarpoonMarks();
+        }
+
+        new Notice(`Deleted mark '${cMark.symbol}'`);
+    };
+
+    async restoreLastChangedMark() {
+        // Undo the last changed mark
+        // buggy
+        // TODO: work on it
+        if (this.plugin.lastChangedMark) {
+            const out = restoreLastChangedMark(this.plugin.marks, this.plugin.lastChangedMark)
+            await this.plugin.saveMarks(out.marks);
+            if (out.markToDiscard) {
+                new Notice(`Restored mark '${this.plugin.lastChangedMark.symbol}' to ${this.plugin.lastChangedMark.filePath}`);
+                this.plugin.saveLastChangedMark(out.markToDiscard);
+            }
+        } else {
+            new Notice('No last changed mark to restore.');
+        }
     }
 
     addFileToHarpoon() {
@@ -364,6 +244,12 @@ export class MarkListModal extends SuggestModal<Mark> {
         else {
             this.setNewOrOverwriteMark({ symbol: reg, filePath: this.app.workspace.getActiveFile()?.path || '' });
         }
+    }
+
+    async removeGapsForHarpoonMarks() {
+        const harpoonRegisters = this.plugin.settings.harpoonRegisterList.split('');
+        const marks = removeGapsForHarpoonMarks(this.plugin.marks, harpoonRegisters);
+        await this.plugin.saveMarks(marks);
     }
 
 }

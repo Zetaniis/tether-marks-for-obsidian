@@ -113,11 +113,11 @@ export class SettingsTab extends PluginSettingTab {
 
         // Add keyboard shortcut settings
         containerEl.createEl('h4', { text: 'Mark List Navigation Shortcuts' });
-        this.createShortcutSetting(containerEl, 'Up', ds.markListUp, 'Shortcut for moving up in the mark list', 'markListUp');
-        this.createShortcutSetting(containerEl, 'Down', ds.markListDown, 'Shortcut for moving down in the mark list', 'markListDown');
-        this.createShortcutSetting(containerEl, 'Select', ds.markListSelect, 'Shortcut for selecting a mark', 'markListSelect');
-        this.createShortcutSetting(containerEl, 'Delete', ds.markListDelete, 'Shortcut for deleting a mark', 'markListDelete');
-        this.createShortcutSetting(containerEl, 'Restore last changed mark', ds.markChangeUndo, 'Shortcut for undoing last action of changing a mark', 'markChangeUndo');
+        this.createShortcutSetting(containerEl, 'Up', ds.modalListUp, 'Shortcut for moving up in the mark list', 'markListUp');
+        this.createShortcutSetting(containerEl, 'Down', ds.modalListDown, 'Shortcut for moving down in the mark list', 'markListDown');
+        this.createShortcutSetting(containerEl, 'Select', ds.modalListSelect, 'Shortcut for selecting a mark', 'markListSelect');
+        this.createShortcutSetting(containerEl, 'Delete', ds.modalListDelete, 'Shortcut for deleting a mark', 'markListDelete');
+        this.createShortcutSetting(containerEl, 'Restore last changed mark', ds.modalChangeUndo, 'Shortcut for undoing last action of changing a mark', 'markChangeUndo');
 
 
     }

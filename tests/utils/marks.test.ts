@@ -7,6 +7,7 @@ import {
     removeGapsForHarpoonMarks
 } from '../../src/utils/marks';
 import { Mark, Settings } from '../../src/types/index';
+import { defaultSettings } from '../../src/utils/defaultValues';
 
 describe('marks utils', () => {
     const marks: Mark[] = [
@@ -56,6 +57,7 @@ describe('marks utils', () => {
 
     describe('getSortedAndFilteredMarks', () => {
         const settings: Settings = {
+            ...defaultSettings,
             registerList: 'ABCDE',
             harpoonRegisterList: 'ABCDE',
             registerSortByList: true,
