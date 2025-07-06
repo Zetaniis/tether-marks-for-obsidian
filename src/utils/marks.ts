@@ -5,7 +5,7 @@ export function findFirstUnusedRegister(marks: Mark[], registers: string[]): str
     for (const reg of registers) {
         // if register not used already, then use it
         // console.log('Checking register:', reg);
-        if (!(marks.map(m => m.sign.toLowerCase()).contains(reg.toLowerCase()))) {
+        if (!(marks.map(m => m.sign.toLowerCase()).includes(reg.toLowerCase()))) {
             return reg;
         }
     }
