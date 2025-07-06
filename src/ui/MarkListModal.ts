@@ -159,7 +159,7 @@ export class MarkListModal extends SuggestModal<Mark> {
                             new Notice('No active file to mark.');
                             return;
                         }
-                        mark = { sign: evt.key.toUpperCase(), filePath: file.path };
+                        mark = { sign: evt.key, filePath: file.path };
                     }
                     evt.preventDefault();
                     await this.onChooseSuggestion(mark, evt);
@@ -334,7 +334,7 @@ export class MarkListModal extends SuggestModal<Mark> {
 
     matchKeybind(evt: KeyboardEvent, keybind: string): boolean {
         // Parse keybind string like 'ctrl+shift+p', 'cmd+n', etc.
-        const parts = keybind.split('+').map(p => p.trim().toLowerCase());
+        const parts = keybind.split('+').map(p => p.trim());
         let required = { ctrl: false, shift: false, alt: false, meta: false, key: '' };
         for (const part of parts) {
             if (part === 'ctrl') required.ctrl = true;
@@ -349,7 +349,7 @@ export class MarkListModal extends SuggestModal<Mark> {
         if (evt.altKey !== required.alt) return false;
         if (evt.metaKey !== required.meta) return false;
         // Check key (case-insensitive)
-        return evt.key.toLowerCase() === required.key;
+        return evt.key === required.key;
     }
 
     addFileToHarpoon() {
@@ -362,7 +362,7 @@ export class MarkListModal extends SuggestModal<Mark> {
             new Notice('Harpoon registers are full, cannot add more marks.');
         }
         else {
-            this.setNewOrOverwriteMark({ sign: reg.toUpperCase(), filePath: this.app.workspace.getActiveFile()?.path || '' });
+            this.setNewOrOverwriteMark({ sign: reg, filePath: this.app.workspace.getActiveFile()?.path || '' });
         }
     }
 
