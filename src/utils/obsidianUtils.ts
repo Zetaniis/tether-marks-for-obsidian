@@ -11,7 +11,7 @@ export function openNewFile(filePath: string, openFileInNewTab: boolean, app: Ap
         }
     }
     else {
-        new Notice(`File not found for path {}. The file may have been deleted, moved or renamed.`);
+        new Notice(`File not found for path ${filePath}. The file may have been deleted, moved or renamed.`);
     }
 }
 
