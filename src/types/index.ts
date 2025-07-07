@@ -19,7 +19,7 @@ export interface Settings {
     experimentalGoto: boolean;
 }
 
-export interface Keybinds {
+export interface ModalKeybinds {
     up: string[];
     down: string[];
     delete: string[];

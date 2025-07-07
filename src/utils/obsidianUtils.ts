@@ -1,5 +1,4 @@
 import { App, MarkdownView, Notice, TFile } from "obsidian";
-import { Settings } from "../types";
 
 export function openNewFile(filePath: string, openFileInNewTab: boolean, app: App) {
     const file = app.vault.getAbstractFileByPath(filePath);
@@ -18,6 +17,7 @@ export function openNewFile(filePath: string, openFileInNewTab: boolean, app: Ap
 export function getAllOpenedFilesExperimental(app: App): any {
     // Check if the file is already open in a leaf, wonky but finds all
     // TODO: I could make a function that does this, but only for specified pane if there is a need for optimization.
+    // eg.: using app.workspace.getLeaf().parent.children will get all the tabs in the current pane
     // xD
     // @ts-ignore
     let tabGroups = app.workspace.getLayout().main?.children;

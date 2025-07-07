@@ -1,10 +1,10 @@
 import { modalDefaultKeybinds, modalDefaultKeybindsMac } from "./defaultValues";
-import { Keybinds } from "../types";
+import { ModalKeybinds } from "../types";
 import { Settings } from "../types";
 
 // Utility to prepare keybinds object
 export function prepareKeybinds(isMacOS: boolean, settings: Settings) {
-    let keybinds: Keybinds = (!isMacOS) ? { ...modalDefaultKeybinds } : { ...modalDefaultKeybindsMac };
+    let keybinds: ModalKeybinds = (!isMacOS) ? { ...modalDefaultKeybinds } : { ...modalDefaultKeybindsMac };
 
     if (settings.markListUp) {
         keybinds.up = [settings.markListUp];

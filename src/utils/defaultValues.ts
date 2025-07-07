@@ -1,13 +1,13 @@
-import { Keybinds } from "../types";
+import { ModalKeybinds } from "../types";
 
-export const modalDefaultKeybinds: Keybinds = {
+export const modalDefaultKeybinds: ModalKeybinds = {
     up: ['ctrl+k', 'ctrl+p'] as string[],
     down: ['ctrl+j', 'ctrl+n'] as string[],
     delete: ['ctrl+d'] as string[],
     undo: ['ctrl+u'] as string[],
 }
 
-export const modalDefaultKeybindsMac: Keybinds = {
+export const modalDefaultKeybindsMac: ModalKeybinds = {
     up: ['cmd+k', 'cmd+p'] as string[],
     down: ['cmd+j', 'cmd+n'] as string[],
     delete: ['cmd+d'] as string[],

@@ -1,10 +1,10 @@
-import { App, TFile, Notice, SuggestModal, MarkdownView, Platform, WorkspaceLeaf, TAbstractFile } from 'obsidian';
+import { App, Notice, SuggestModal, Platform } from 'obsidian';
 import VimMarksImpl from '../main';
-import { Keybinds, Mark } from '../types/index';
-import { modalDefaultKeybinds, modalDefaultKeybindsMac, modalInstructionElClass, modalMarkFilepathClass, modalMarkSymbolClass, Mode, modalPlaceholderMessages } from '../utils/defaultValues';
-import { findFirstUnusedRegister, getMarkBySymbol, getSortedAndFilteredMarks, removeGapsForHarpoonMarks, restoreLastChangedMark, setNewOrOverwriteMark, sortMarksAlphabetically } from '../utils/marks';
+import { ModalKeybinds, Mark } from '../types/index';
+import { modalInstructionElClass, modalMarkFilepathClass, modalMarkSymbolClass, Mode, modalPlaceholderMessages } from '../utils/defaultValues';
+import { findFirstUnusedRegister, getMarkBySymbol, getSortedAndFilteredMarks, removeGapsForHarpoonMarks, restoreLastChangedMark, setNewOrOverwriteMark } from '../utils/marks';
 import { matchKeybind, prepareKeybinds } from '../utils/keybinds';
-import { getAllOpenedFilesExperimental, navigateToOpenFileByPath, openNewFile as openNewFileByPath } from '../utils/obsidianUtils';
+import { navigateToOpenFileByPath, openNewFile as openNewFileByPath } from '../utils/obsidianUtils';
 
 
 export class MarkListModal extends SuggestModal<Mark> {
@@ -45,15 +45,15 @@ export class MarkListModal extends SuggestModal<Mark> {
         }
         this.modalEl.addClass('marks-modal');
 
-        const keybinds = prepareKeybinds(Platform.isMacOS, this.plugin.settings);
+        const modalKeybinds = prepareKeybinds(Platform.isMacOS, this.plugin.settings);
 
         // Prompt instructions panel
-        const instructions = this.prepareModalInstructionElement(keybinds);
+        const modalInstructions = this.prepareModalInstructionElement(modalKeybinds);
 
         // Insert instructions panel at the bottom of the modal
-        this.modalEl.appendChild(instructions);
+        this.modalEl.appendChild(modalInstructions);
 
-        this._keyHandler = this.getModalKeyHandler(keybinds);
+        this._keyHandler = this.getModalKeyHandler(modalKeybinds);
         window.addEventListener('keydown', this._keyHandler, true);
     }
 
@@ -69,7 +69,7 @@ export class MarkListModal extends SuggestModal<Mark> {
         super.onClose();
     }
 
-    private prepareModalInstructionElement(keybinds: Keybinds) {
+    private prepareModalInstructionElement(keybinds: ModalKeybinds) {
         const instructions = document.createElement('div');
         instructions.addClass(modalInstructionElClass);
         // Helper to format keybinds for display
@@ -90,7 +90,7 @@ export class MarkListModal extends SuggestModal<Mark> {
         return instructions;
     }
 
-    getModalKeyHandler(keybinds: Keybinds) {
+    getModalKeyHandler(keybinds: ModalKeybinds) {
         return async (evt: KeyboardEvent) => {
             const availableRegisters = new Set((!this.isHarpoonMode ? this.plugin.settings.registerList : this.plugin.settings.harpoonRegisterList).split(''));
             // @ts-ignore
