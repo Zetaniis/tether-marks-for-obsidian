@@ -17,9 +17,15 @@ export function openNewFile(filePath: string, openFileInNewTab: boolean, app: Ap
 
 export function getAllOpenedFilesExperimental(app: App): any {
     // Check if the file is already open in a leaf, wonky but finds all
+    // TODO: I could make a function that does this, but only for specified pane if there is a need for optimization.
     // xD
     // @ts-ignore
-    return app.workspace.getLayout().main?.children[0].children;
+    let tabGroups = app.workspace.getLayout().main?.children;
+    let out = [];
+    for (const el of tabGroups){
+        out.push(...el.children)
+    }
+    return out;
 
     // const app = this.app;
     // const files = new Set<TFile>();
@@ -52,7 +58,7 @@ export function navigateToOpenFileByPath(filePath: string, experimentalGoto: boo
                 // If the file is already open, switch to it
                 const leaf = app.workspace.getLeafById(openedFile.id);
                 // console.log('Found leaf for file:', openedFile.state.state.file, openedFile.id, leaf);
-                if (leaf) {
+                if (leaf && leaf.parent === app.workspace.getLeaf().parent) {
                     app.workspace.setActiveLeaf(leaf, { focus: true });
                     return true;
                 }
@@ -64,7 +70,7 @@ export function navigateToOpenFileByPath(filePath: string, experimentalGoto: boo
         const leaves = app.workspace.getLeavesOfType('markdown');
         for (const leaf of leaves) {
             const view = leaf.view;
-            if (view instanceof MarkdownView && view.file && view.file.path === filePath) {
+            if (view instanceof MarkdownView && view.file && view.file.path === filePath && leaf.parent === app.workspace.getLeaf().parent) {
                 app.workspace.setActiveLeaf(leaf, { focus: true });
                 return true;
             }
