@@ -18,10 +18,6 @@ export function prepareKeybinds(isMacOS: boolean, settings: Settings) {
         keybinds.delete = [settings.markListDelete];
     }
 
-    if (settings.markChangeUndo) {
-        keybinds.undo = [settings.markChangeUndo];
-    }
-
     if (settings.markListSelect){
         keybinds.enter = [settings.markListSelect];
     }

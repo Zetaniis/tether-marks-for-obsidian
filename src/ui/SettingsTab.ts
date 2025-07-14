@@ -117,7 +117,6 @@ export class SettingsTab extends PluginSettingTab {
         this.createShortcutSetting(containerEl, 'Down', ds.modalListDown, 'Shortcut for moving down in the list', 'markListDown');
         this.createShortcutSetting(containerEl, 'Select', ds.modalListSelect, 'Shortcut for selecting a mark', 'markListSelect');
         this.createShortcutSetting(containerEl, 'Delete', ds.modalListDelete, 'Shortcut for deleting a mark', 'markListDelete');
-        // this.createShortcutSetting(containerEl, 'Restore last changed mark', ds.modalChangeUndo, 'Shortcut for undoing last action of changing a mark', 'markChangeUndo');
 
 
     }

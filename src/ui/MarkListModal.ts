@@ -2,7 +2,7 @@ import { App, Notice, SuggestModal, Platform } from 'obsidian';
 import VimMarksImpl from '../main';
 import { ModalKeybinds, Mark } from '../types/index';
 import { modalInstructionElClass, modalMarkFilepathClass, modalMarkSymbolClass, Mode, modalPlaceholderMessages } from '../utils/defaultValues';
-import { findFirstUnusedRegister, getMarkBySymbol, getSortedAndFilteredMarks, removeGapsForHarpoonMarks, restoreLastChangedMark, setNewOrOverwriteMark } from '../utils/marks';
+import { findFirstUnusedRegister, getMarkBySymbol, getSortedAndFilteredMarks, removeGapsForHarpoonMarks, setNewOrOverwriteMark } from '../utils/marks';
 import { matchKeybind, prepareKeybinds } from '../utils/keybinds';
 import { navigateToOpenFileByPath, openNewFile as openNewFileByPath } from '../utils/obsidianUtils';
 
@@ -81,7 +81,6 @@ export class MarkListModal extends SuggestModal<Mark> {
             <span>${formatKeys(keybinds.up)} : Up</span>
             <span>${formatKeys(keybinds.down)} : Down</span>
             <span>${formatKeys(keybinds.delete)} : Delete</span>
-            <span>${formatKeys(keybinds.undo)} : Undo last changed mark</span>
             <span><kbd>Symbol</kbd> : Jump/Set/Delete</span>
             <span><kbd>Enter</kbd> : Confirm</span>
             <span><kbd>Esc</kbd> : Close</span>
@@ -118,8 +117,6 @@ export class MarkListModal extends SuggestModal<Mark> {
                     }
                     chooser.setSelectedItem(Math.max(0, newIdx), false);
                 }
-                // else if (keybinds.undo.some(kb => this.matchKeybind(evt, kb))) {
-                // }
             } else if (keybinds.enter.some(kb => matchKeybind(evt, kb))) {
                 evt.preventDefault();
                 // Delete the currently selected mark
@@ -129,14 +126,6 @@ export class MarkListModal extends SuggestModal<Mark> {
                     this.onChooseSuggestion(selected, evt);
                     this.close();
                 }
-            }
-            else if (keybinds.undo.some(kb => matchKeybind(evt, kb))) {
-                evt.preventDefault();
-                // Restore the last changed mark
-                await this.restoreLastChangedMark();
-                // Refresh the modal list
-                chooser.values = getSortedAndFilteredMarks(this.plugin.marks, this.isHarpoonMode, this.plugin.settings);
-                chooser.setSuggestions(chooser.values);
             } else if (availableRegisters.has(evt.key)) {
                 let mark = getMarkBySymbol(this.plugin.marks, evt.key);
                 if (this.mode === 'set') {
@@ -224,21 +213,6 @@ export class MarkListModal extends SuggestModal<Mark> {
 
         new Notice(`Deleted mark '${cMark.symbol}'`);
     };
-
-    async restoreLastChangedMark() {
-        // Undo the last changed mark
-        // buggy
-        if (this.plugin.lastChangedMark) {
-            const out = restoreLastChangedMark(this.plugin.marks, this.plugin.lastChangedMark)
-            await this.plugin.saveMarks(out.marks);
-            if (out.markToDiscard) {
-                new Notice(`Restored mark '${this.plugin.lastChangedMark.symbol}' to ${this.plugin.lastChangedMark.filePath}`);
-                this.plugin.saveLastChangedMark(out.markToDiscard);
-            }
-        } else {
-            new Notice('No last changed mark to restore.');
-        }
-    }
 
     addFileToHarpoon() {
         // Add the selected mark to the Harpoon list

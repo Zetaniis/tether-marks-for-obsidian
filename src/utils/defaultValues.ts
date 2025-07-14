@@ -4,7 +4,6 @@ export const modalDefaultKeybinds: ModalKeybinds = {
     up: ['ctrl+k', 'ctrl+p'] as string[],
     down: ['ctrl+j', 'ctrl+n'] as string[],
     delete: ['ctrl+d'] as string[],
-    undo: ['ctrl+u'] as string[],
     enter: ['Enter'] as string[]
 }
 
@@ -12,7 +11,6 @@ export const modalDefaultKeybindsMac: ModalKeybinds = {
     up: ['cmd+k', 'cmd+p'] as string[],
     down: ['cmd+j', 'cmd+n'] as string[],
     delete: ['cmd+d'] as string[],
-    undo: ['cmd+u'] as string[],
     enter: ['Enter'] as string[]
 }
 
@@ -29,7 +27,6 @@ export const defaultSettings = {
     modalListUp: '',
     modalListDown: '',
     modalListSelect: '',
-    modalChangeUndo: '',
     modalListDelete: '',
     openMarkInNewTab: false, // If true, open mark in new tab, else in current tab
     registerList: 'abcdefghijklmnopqrstuvwxyz',

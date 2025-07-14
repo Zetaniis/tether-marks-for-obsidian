@@ -22,16 +22,6 @@ export async function saveMarks(plugin: VimMarksImpl, marks: Mark[]) {
     await plugin.saveData(data);
 }
 
-export async function loadLastChangedMark(plugin: VimMarksImpl): Promise<Mark> {
-    return (await plugin.loadData())?.lastChangedMark || [];
-}
-
-export async function saveLastChangedMark(plugin: VimMarksImpl, lastChangedMark: Mark) {
-    const data = await plugin.loadData() || {};
-    data.lastChangedMark = lastChangedMark;
-    await plugin.saveData(data);
-}
-
 export async function JSONschemaCheck(plugin: VimMarksImpl) {
     const data = await plugin.loadData() || {schemaVersion: latestJSONSchemaVersion};
 
