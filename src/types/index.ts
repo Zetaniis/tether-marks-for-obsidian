@@ -8,6 +8,7 @@ export interface Settings {
     markListUp?: string;
     markListDown?: string;
     markListSelect?: string;
+    markListCancel?: string;
     openMarkInNewTab: boolean; // If true, open mark in new tab, else in current tab
     markListDelete?: string;
     registerList: string; // All key symbols that should be used as registers
@@ -23,4 +24,5 @@ export interface ModalKeybinds {
     down: string[];
     delete: string[];
     select: string[];
+    cancel: string[];
 }

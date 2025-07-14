@@ -4,14 +4,16 @@ export const modalDefaultKeybinds: ModalKeybinds = {
     up: ['ctrl+k', 'ctrl+p'] as string[],
     down: ['ctrl+j', 'ctrl+n'] as string[],
     delete: ['ctrl+d'] as string[],
-    select: ['Enter'] as string[]
+    select: ['Enter'] as string[],
+    cancel: ['Escape'] as string[],
 }
 
 export const modalDefaultKeybindsMac: ModalKeybinds = {
     up: ['cmd+k', 'cmd+p'] as string[],
     down: ['cmd+j', 'cmd+n'] as string[],
     delete: ['cmd+d'] as string[],
-    select: ['Enter'] as string[]
+    select: ['Enter'] as string[],
+    cancel: ['Escape'] as string[],
 }
 
 export const modalPlaceholderMessages = {
@@ -28,6 +30,7 @@ export const defaultSettings = {
     modalListDown: '',
     modalListSelect: '',
     modalListDelete: '',
+    modalListCancel: '',
     openMarkInNewTab: false, // If true, open mark in new tab, else in current tab
     registerList: 'abcdefghijklmnopqrstuvwxyz',
     registerSortByList: true,

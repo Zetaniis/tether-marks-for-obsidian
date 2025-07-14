@@ -83,7 +83,7 @@ export class MarkListModal extends SuggestModal<Mark> {
             <span>${formatKeys(keybinds.delete)} : Delete</span>
             <span><kbd>Symbol</kbd> : Jump/Set/Delete</span>
             <span>${formatKeys(keybinds.select)} : Confirm</span>
-            <span><kbd>Esc</kbd> : Close</span>
+            <span>${formatKeys(keybinds.cancel)} : Close</span>
 
         `;
         return instructions;
@@ -126,6 +126,9 @@ export class MarkListModal extends SuggestModal<Mark> {
                     this.onChooseSuggestion(selected, evt);
                     this.close();
                 }
+            } else if (keybinds.cancel.some(kb => matchKeybind(evt, kb))) {
+                evt.preventDefault();
+                this.close();
             } else if (availableRegisters.has(evt.key)) {
                 let mark = getMarkBySymbol(this.plugin.marks, evt.key);
                 if (this.mode === 'set') {

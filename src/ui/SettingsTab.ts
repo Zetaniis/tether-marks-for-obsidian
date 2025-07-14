@@ -112,10 +112,12 @@ export class SettingsTab extends PluginSettingTab {
 
 
         // Add keyboard shortcut settings
+        // TODO: setting those values here like feels wrong, especially passing object property as string
         containerEl.createEl('h4', { text: 'List navigation shortcuts' });
         this.createShortcutSetting(containerEl, 'Up', ds.modalListUp, 'Shortcut for moving up in the list', 'markListUp');
         this.createShortcutSetting(containerEl, 'Down', ds.modalListDown, 'Shortcut for moving down in the list', 'markListDown');
         this.createShortcutSetting(containerEl, 'Select', ds.modalListSelect, 'Shortcut for selecting a mark', 'markListSelect');
+        this.createShortcutSetting(containerEl, 'Cancel', ds.modalListCancel, 'Shortcut for cancelling the modal', 'markListCancel');
         this.createShortcutSetting(containerEl, 'Delete', ds.modalListDelete, 'Shortcut for deleting a mark', 'markListDelete');
 
 

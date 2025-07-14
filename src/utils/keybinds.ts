@@ -22,6 +22,10 @@ export function prepareKeybinds(isMacOS: boolean, settings: Settings) {
         keybinds.select = [settings.markListSelect];
     }
 
+    if (settings.markListCancel){
+        keybinds.cancel = [settings.markListCancel];
+    }
+ 
     return keybinds;
 }
 
