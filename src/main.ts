@@ -1,7 +1,7 @@
 import { Plugin } from 'obsidian';
 import { setGlobalMark, goToGlobalMark, goToHarpoonMark, addFileToHarpoon, deleteGlobalMark } from './commands';
 import { SettingsTab } from './ui/SettingsTab';
-import { loadSettings, saveSettings, loadMarks, saveMarks, loadLastChangedMark, saveLastChangedMark } from './utils/storage';
+import { loadSettings, saveSettings, loadMarks, saveMarks, loadLastChangedMark, saveLastChangedMark, JSONschemaCheck } from './utils/storage';
 import { Settings, Mark } from './types/index';
 
 export default class VimMarksImpl extends Plugin {
@@ -10,6 +10,8 @@ export default class VimMarksImpl extends Plugin {
     lastChangedMark: Mark | null = null;
 
     async onload() {
+        await JSONschemaCheck(this);
+
         this.settings = await loadSettings(this);
         this.marks = await loadMarks(this);
         this.lastChangedMark = await loadLastChangedMark(this);

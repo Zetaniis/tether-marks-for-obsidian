@@ -43,3 +43,5 @@ export const defaultSettings = {
 export const modalInstructionElClass = 'modal-instruction-el';
 export const modalMarkSymbolClass = 'mark-symbol';
 export const modalMarkFilepathClass = 'mark-file-path';
+
+export const JSONschemaVersion = 1;
