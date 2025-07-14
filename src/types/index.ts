@@ -24,4 +24,5 @@ export interface ModalKeybinds {
     down: string[];
     delete: string[];
     undo: string[];
+    enter: string[];
 }

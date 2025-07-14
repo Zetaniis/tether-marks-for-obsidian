@@ -5,6 +5,7 @@ export const modalDefaultKeybinds: ModalKeybinds = {
     down: ['ctrl+j', 'ctrl+n'] as string[],
     delete: ['ctrl+d'] as string[],
     undo: ['ctrl+u'] as string[],
+    enter: ['Enter'] as string[]
 }
 
 export const modalDefaultKeybindsMac: ModalKeybinds = {
@@ -12,6 +13,7 @@ export const modalDefaultKeybindsMac: ModalKeybinds = {
     down: ['cmd+j', 'cmd+n'] as string[],
     delete: ['cmd+d'] as string[],
     undo: ['cmd+u'] as string[],
+    enter: ['Enter'] as string[]
 }
 
 export const modalPlaceholderMessages = {

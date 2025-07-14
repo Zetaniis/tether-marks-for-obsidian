@@ -120,6 +120,15 @@ export class MarkListModal extends SuggestModal<Mark> {
                 }
                 // else if (keybinds.undo.some(kb => this.matchKeybind(evt, kb))) {
                 // }
+            } else if (keybinds.enter.some(kb => matchKeybind(evt, kb))) {
+                evt.preventDefault();
+                // Delete the currently selected mark
+                const ind = chooser.selectedItem;
+                const selected: Mark = chooser.values[ind];
+                if (selected) {
+                    this.onChooseSuggestion(selected, evt);
+                    this.close();
+                }
             }
             else if (keybinds.undo.some(kb => matchKeybind(evt, kb))) {
                 evt.preventDefault();

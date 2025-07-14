@@ -22,6 +22,10 @@ export function prepareKeybinds(isMacOS: boolean, settings: Settings) {
         keybinds.undo = [settings.markChangeUndo];
     }
 
+    if (settings.markListSelect){
+        keybinds.enter = [settings.markListSelect];
+    }
+
     return keybinds;
 }
 
