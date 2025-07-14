@@ -228,7 +228,6 @@ export class MarkListModal extends SuggestModal<Mark> {
     async restoreLastChangedMark() {
         // Undo the last changed mark
         // buggy
-        // TODO: work on it
         if (this.plugin.lastChangedMark) {
             const out = restoreLastChangedMark(this.plugin.marks, this.plugin.lastChangedMark)
             await this.plugin.saveMarks(out.marks);

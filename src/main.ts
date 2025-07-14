@@ -18,37 +18,37 @@ export default class VimMarksImpl extends Plugin {
 
         this.addCommand({
             id: 'set-global-mark',
-            name: 'Set Global Mark',
+            name: 'Set mark',
             callback: () => setGlobalMark(this),
         });
 
         this.addCommand({
             id: 'go-to-global-mark',
-            name: 'Go to Global Mark',
+            name: 'Go to mark',
             callback: () => goToGlobalMark(this),
         });
 
         this.addCommand({
             id: 'delete-global-mark',
-            name: 'Delete Global Mark',
+            name: 'Delete mark',
             callback: () => deleteGlobalMark(this),
         });
 
         this.addCommand({
             id: 'add-file-to-harpoon',
-            name: 'Add File to Harpoon',
+            name: 'Add file to Harpoon',
             callback: () => addFileToHarpoon(this),
         });
 
         this.addCommand({
             id: 'go-to-harpoon-mark',
-            name: 'Go to Harpoon Mark',
+            name: 'Go to Harpoon mark',
             callback: () => goToHarpoonMark(this),
         });
 
         this.addSettingTab(new SettingsTab(this.app, this));
 
-        console.log('VimMarksImpl plugin loaded');
+        console.log('loading tether-marks');
     }
 
     async saveSettings() {
@@ -67,6 +67,6 @@ export default class VimMarksImpl extends Plugin {
 
     onunload() {
         // Potential cleanup
-        console.log('VimMarksImpl plugin unloaded');
+        console.log('unloading tether-marks');
     }
 }

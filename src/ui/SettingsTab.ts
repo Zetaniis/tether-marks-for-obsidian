@@ -17,7 +17,7 @@ export class SettingsTab extends PluginSettingTab {
         const ds = defaultSettings;
 
         containerEl.createEl('h4', { text: 'General' });
-        this.createRegisterListSetting(containerEl, "Register list", ds.registerList, 'All key symbols that should be used as registers. Make sure to only input key symbols that you can input with one click of a keyboard button.', 'registerList')
+        this.createRegisterListSetting(containerEl, "Register list", ds.registerList, 'Key symbols to be used as registers. Only include symbols that you can input with a single keystroke.', 'registerList')
             .addExtraButton((btn) => {
                 btn
                     .setIcon('refresh-ccw')
@@ -31,8 +31,8 @@ export class SettingsTab extends PluginSettingTab {
             })
 
         new Setting(containerEl)
-            .setName('Sort all registers by register list')
-            .setDesc('If enabled, the the registers will be sorted by the order of the key symbols in the register list. If disabled, the sort will be alphabetical according to current locale.')
+            .setName('Sort all marks by register list')
+            .setDesc('Sort marks by the order of the key symbols in the register list. If disabled, marks will be sorted alphabetically according to the current locale.')
             .addToggle(toggle => toggle
                 .setValue(this.plugin.settings.registerSortByList ?? ds.registerSortByList)
                 .onChange(async (value) => {
@@ -54,7 +54,7 @@ export class SettingsTab extends PluginSettingTab {
 
         new Setting(containerEl)
             .setName('Open mark in new tab')
-            .setDesc('If enabled, opening a mark will open the file in a new tab. If disabled, it will open the file in the current tab.')
+            .setDesc('Open a file in the new tab when using "go to" command. If disabled, it will open the file in the current tab.')
             .addToggle(toggle => toggle
                 .setValue(this.plugin.settings.openMarkInNewTab ?? ds.openMarkInNewTab)
                 .onChange(async (value) => {
@@ -65,7 +65,7 @@ export class SettingsTab extends PluginSettingTab {
 
         new Setting(containerEl)
             .setName('No duplication of opened files when using goto (experimental)')
-            .setDesc('Restarting obsdian with opened files and trying to switch to them using the mark list will cause a new tab to open. Use this to prevent that. This is a rigid implementation of goto mechanism and may stop working in the future.')
+            .setDesc('Prevents duplicate tabs when switching to already opened files using the mark list after restarting Obsidian. (Experimental: may not work in future Obsidian versions.)')
             .addToggle(toggle => toggle
                 .setValue(this.plugin.settings.experimentalGoto ?? ds.experimentalGoto)
                 .onChange(async (value) => {
@@ -75,11 +75,11 @@ export class SettingsTab extends PluginSettingTab {
             );
 
         containerEl.createEl('h4', { text: 'Harpoon registers' });
-        this.createRegisterListSetting(containerEl, "Harpoon register list", ds.harpoonRegisterList, 'All key symbols that should be used as registers for the Harpoon feature. Leftmost key symbol will be the first register to be used. Make sure to only input key symbols that you can input with one click of a keyboard button.', 'harpoonRegisterList')
+        this.createRegisterListSetting(containerEl, "Harpoon register list", ds.harpoonRegisterList, 'Key symbols to be used as Harpoon registers. Only include symbols that you can input with a single keystroke.', 'harpoonRegisterList')
             .addExtraButton((btn) => {
                 btn
                     .setIcon('refresh-ccw')
-                    .setTooltip('Reset to default harpoon register list')
+                    .setTooltip('Reset to default Harpoon register list')
                     .onClick(async () => {
                         this.plugin.settings.harpoonRegisterList = ds.harpoonRegisterList;
                         await this.plugin.saveSettings();
@@ -89,8 +89,8 @@ export class SettingsTab extends PluginSettingTab {
             })
 
         new Setting(containerEl)
-            .setName('Sort harpoon registers by harpoon register list')
-            .setDesc('If enabled, the harpoon registers will be sorted by the order of the key symbols in the harpoon register list. If disabled, the sort will be alphabetical.')
+            .setName('Sort Harpoon marks by Harpoon register list')
+            .setDesc('Sort Harpoon marks by the order of the key symbols in the Harpoon register list. If disabled, marks will be sorted alphabetically according to the current locale.')
             .addToggle(toggle => toggle
                 .setValue(this.plugin.settings.harpoonRegisterSortByList ?? ds.harpoonRegisterSortByList)
                 .onChange(async (value) => {
@@ -100,8 +100,8 @@ export class SettingsTab extends PluginSettingTab {
             );
 
         new Setting(containerEl)
-            .setName('Remove gaps in bewteen harpoon marks')
-            .setDesc('If enabled, harpoon marks will be shifted to the left for every gap (register symbol with no mark) based on the order of the harpoon register list on deleting a mark.')
+            .setName('Remove gaps inbetween Harpoon marks')
+            .setDesc('Harpoon marks will be shifted to the left for every gap (register with no mark) based on the order of the Harpoon register list.')
             .addToggle(toggle => toggle
                 .setValue(this.plugin.settings.harpoonRegisterGapRemoval ?? ds.harpoonRegisterGapRemoval)
                 .onChange(async (value) => {
@@ -117,7 +117,7 @@ export class SettingsTab extends PluginSettingTab {
         this.createShortcutSetting(containerEl, 'Down', ds.modalListDown, 'Shortcut for moving down in the list', 'markListDown');
         this.createShortcutSetting(containerEl, 'Select', ds.modalListSelect, 'Shortcut for selecting a mark', 'markListSelect');
         this.createShortcutSetting(containerEl, 'Delete', ds.modalListDelete, 'Shortcut for deleting a mark', 'markListDelete');
-        this.createShortcutSetting(containerEl, 'Restore last changed mark', ds.modalChangeUndo, 'Shortcut for undoing last action of changing a mark', 'markChangeUndo');
+        // this.createShortcutSetting(containerEl, 'Restore last changed mark', ds.modalChangeUndo, 'Shortcut for undoing last action of changing a mark', 'markChangeUndo');
 
 
     }

@@ -1,27 +1,38 @@
-# vim-marks-impl
-
-## Overview
-The `vim-marks-impl` plugin for Obsidian mimics the functionality of Vim global marks, allowing users to set file references within key symbol registers and navigate to the corresponding files easily. This plugin enhances productivity by providing a quick way to access frequently used files.
+# Tether marks for obsidian
+The `tether-marks` plugin for Obsidian inspired by global vim mark functionality and [Harpoon](https://github.com/ThePrimeagen/harpoon) Neovim plugin. Lets you set file references within key symbol registers and navigate to the corresponding files with ease and speed.
 
 ## Features
-- Set global marks for files using key symbol registers.
-- Navigate to files using a clickable list of global marks.
-- Customizable settings, including the option to hide the global mark list during input.
+- Tether/set marks for files using key symbol registers.
+- Navigate to files using a list of set marks.
+- Use Neovim-Harpoon-plugin-like workflow in your Obsidian. 
+- Set custom key symbols. You can use anything as long as it is a single keystroke (excluding modifiers: ctrl, shift, alt) and is considered one symbol. 
 
 ## Installation
-1. Download the `vim-marks-impl` plugin from the repository.
-2. Place the plugin folder in your Obsidian plugins directory.
-3. Enable the plugin in the Obsidian settings under the "Community Plugins" section.
+### BRAT
+ - Install the BRAT plugin from Community plugins
+ - In the BRAT options, click on Add Beta plugin and enter `https://github.com/Zetaniis/tether-marks-obsidian`
+ - The plugin will auto update on every Obsidian startup
 
-## Usage
-- To set a global mark, use the command palette and select the "Set Global Mark" command. You will be prompted to choose a key symbol register and the file you want to associate with it.
-- To navigate to a file using a global mark, open the command palette and select the "Go to Global Mark" command. A list of your global marks will be displayed, allowing you to click on the desired mark to open the associated file.
+### Raw
+- Download the `tether-marks-obsidian` plugin from the repository.
+- Place the plugin folder into your Obsidian plugins directory.
+- Enable the plugin in the Obsidian settings under the "Community Plugins" section.
 
-## Settings
-- Access the plugin settings through the Obsidian settings menu. You can choose to hide the global mark list during input for a cleaner interface.
+## Example vim config using [vimrc-support](https://github.com/esm7/obsidian-vimrc-support) plugin
+In order to make the workflow more vim-like, you can bind tether-marks commands to vim key bindings by using [Commander](https://github.com/phibr0/obsidian-commander) and [vimrc](https://github.com/esm7/obsidian-vimrc-support) plugins - https://github.com/esm7/obsidian-vimrc-support/issues/102#issuecomment-1975606466.
 
-## Contributing
-Contributions are welcome! Please feel free to submit issues or pull requests to improve the functionality and usability of the plugin.
+Example:
+```vimscript
+" mapping a commader command to a vim command through obcommand
+exmap setmark obcommand cmdr:macro-1
+" mapping the vim command to a key sequence
+nnoremap <Space>m :setmark<CR>
+exmap gomark obcommand cmdr:macro-2
+nnoremap ' :gomark<CR>
+```
 
-## License
-This project is licensed under the MIT License. See the LICENSE file for more details.
+Make sure to add the tether-marks commands to Commander's macros list. 
+
+## Naming conventions
+- Register - key symbol that will be used to tether to files. 
+- Mark - key value pair, where key is the register (the key symbol) and value is the path of the file that has been marked by that register. 
