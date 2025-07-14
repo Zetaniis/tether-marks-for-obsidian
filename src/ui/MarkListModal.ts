@@ -82,7 +82,7 @@ export class MarkListModal extends SuggestModal<Mark> {
             <span>${formatKeys(keybinds.down)} : Down</span>
             <span>${formatKeys(keybinds.delete)} : Delete</span>
             <span><kbd>Symbol</kbd> : Jump/Set/Delete</span>
-            <span><kbd>Enter</kbd> : Confirm</span>
+            <span>${formatKeys(keybinds.select)} : Confirm</span>
             <span><kbd>Esc</kbd> : Close</span>
 
         `;
@@ -117,7 +117,7 @@ export class MarkListModal extends SuggestModal<Mark> {
                     }
                     chooser.setSelectedItem(Math.max(0, newIdx), false);
                 }
-            } else if (keybinds.enter.some(kb => matchKeybind(evt, kb))) {
+            } else if (keybinds.select.some(kb => matchKeybind(evt, kb))) {
                 evt.preventDefault();
                 // Delete the currently selected mark
                 const ind = chooser.selectedItem;

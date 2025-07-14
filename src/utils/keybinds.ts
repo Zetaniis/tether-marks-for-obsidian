@@ -19,7 +19,7 @@ export function prepareKeybinds(isMacOS: boolean, settings: Settings) {
     }
 
     if (settings.markListSelect){
-        keybinds.enter = [settings.markListSelect];
+        keybinds.select = [settings.markListSelect];
     }
 
     return keybinds;
