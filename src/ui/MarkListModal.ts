@@ -1,7 +1,7 @@
 import { App, Notice, SuggestModal, Platform } from 'obsidian';
 import VimMarksImpl from '../main';
 import { ModalKeybinds, Mark } from '../types/index';
-import { modalInstructionElClass, modalMarkFilepathClass, modalMarkSymbolClass, Mode, modalPlaceholderMessages } from '../utils/defaultValues';
+import { modalInstructionElClass, modalMarkFilepathClass, modalMarkSymbolClass, Mode, modalPlaceholderMessages, modalMarkHarpoonSign } from '../utils/defaultValues';
 import { findFirstUnusedRegister, getMarkBySymbol, getSortedAndFilteredMarks, removeGapsForHarpoonMarks, setNewOrOverwriteMark } from '../utils/marks';
 import { matchKeybind, prepareKeybinds } from '../utils/keybinds';
 import { navigateToOpenFileByPath, openNewFile as openNewFileByPath } from '../utils/obsidianUtils';
@@ -24,13 +24,16 @@ export class MarkListModal extends SuggestModal<Mark> {
     }
 
     getSuggestions(query: string): Mark[] {
-        // No search input, always show all marks
+        // No search input
         return getSortedAndFilteredMarks(this.plugin.marks, this.isHarpoonMode, this.plugin.settings);
     }
 
     renderSuggestion(mark: Mark, el: HTMLElement) {
         el.createEl('span', { text: mark.symbol, cls: modalMarkSymbolClass });
         el.createEl('span', { text: mark.filePath, cls: modalMarkFilepathClass });
+        if (this.plugin.settings.harpoonRegisterList.contains(mark.symbol)) {
+            el.createEl('span', { text: "H", cls: modalMarkHarpoonSign });
+        }
         el.addEventListener('click', async (evt) => {
             await this.onChooseSuggestion(mark, evt);
             this.close();

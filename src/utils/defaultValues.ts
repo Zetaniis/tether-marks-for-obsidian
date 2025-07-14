@@ -16,6 +16,7 @@ export const modalDefaultKeybindsMac: ModalKeybinds = {
     cancel: ['Escape'] as string[],
 }
 
+// This is not used for now
 export const modalPlaceholderMessages = {
     set: 'Select a mark to set',
     goto: 'Select a mark to go to',
@@ -43,5 +44,6 @@ export const defaultSettings = {
 export const modalInstructionElClass = 'modal-instruction-el';
 export const modalMarkSymbolClass = 'mark-symbol';
 export const modalMarkFilepathClass = 'mark-file-path';
+export const modalMarkHarpoonSign = 'harpoon-sign';
 
 export const JSONschemaVersion = 1;
