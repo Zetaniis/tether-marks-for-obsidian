@@ -19,19 +19,18 @@ The `tether-marks` plugin for Obsidian inspired by global vim mark functionality
 - Enable the plugin in the Obsidian settings under the "Community Plugins" section.
 
 ## Example vim config using [vimrc-support](https://github.com/esm7/obsidian-vimrc-support) plugin
-In order to make the workflow more vim-like, you can bind tether-marks commands to vim key bindings by using [Commander](https://github.com/phibr0/obsidian-commander) and [vimrc](https://github.com/esm7/obsidian-vimrc-support) plugins - https://github.com/esm7/obsidian-vimrc-support/issues/102#issuecomment-1975606466.
+In order to make the workflow more vim-like, you can bind tether-marks commands to vim key bindings by using [vimrc-support](https://github.com/esm7/obsidian-vimrc-support).
 
 Example:
 ```vimscript
-" mapping a commader command to a vim command through obcommand
-exmap setmark obcommand cmdr:macro-1
-" mapping the vim command to a key sequence
+" mapping the plugin commands to a vim command through obcommand
+exmap setmark obcommand tether-marks-obsidian:set-mark
 nnoremap <Space>m :setmark<CR>
-exmap gomark obcommand cmdr:macro-2
+exmap gomark obcommand tether-marks-obsidian:go-to-mark
 nnoremap ' :gomark<CR>
 ```
 
-Make sure to add the tether-marks commands to Commander's macros list. 
+For all available commands that can be mapped to vim, run ex command `obcommand`. The list should appear in the developer console.
 
 ## Naming conventions
 - Register - key symbol that will be used to tether to files. 

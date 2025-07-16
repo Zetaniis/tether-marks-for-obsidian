@@ -15,19 +15,19 @@ export default class VimMarksImpl extends Plugin {
         this.marks = await loadMarks(this);
 
         this.addCommand({
-            id: 'set-global-mark',
+            id: 'set-mark',
             name: 'Set mark',
             callback: () => setGlobalMark(this),
         });
 
         this.addCommand({
-            id: 'go-to-global-mark',
+            id: 'go-to-mark',
             name: 'Go to mark',
             callback: () => goToGlobalMark(this),
         });
 
         this.addCommand({
-            id: 'delete-global-mark',
+            id: 'delete-mark',
             name: 'Delete mark',
             callback: () => deleteGlobalMark(this),
         });
