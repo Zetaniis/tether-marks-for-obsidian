@@ -4,19 +4,19 @@ export interface Mark {
 }
 
 export interface Settings {
-    hideMarkListDuringInput: boolean;
-    markListUp?: string;
-    markListDown?: string;
-    markListSelect?: string;
-    markListCancel?: string;
+    experimentalGoto: boolean;
     openMarkInNewTab: boolean; // If true, open mark in new tab, else in current tab
-    markListDelete?: string;
+    // hideMarkListDuringInput: boolean;
     registerList: string; // All key symbols that should be used as registers
     registerSortByList: boolean; // If true, sort registers by the order of the key symbols in the registerList
     harpoonRegisterList: string; // All key symbols that should be used as registers for the Harpoon feature
     harpoonRegisterSortByList: boolean;
     harpoonRegisterGapRemoval: boolean;
-    experimentalGoto: boolean;
+    modalListUp: string;
+    modalListDown: string;
+    modalListSelect: string;
+    modalListCancel: string;
+    modalListDelete: string,
 }
 
 export interface ModalKeybinds {
@@ -26,3 +26,5 @@ export interface ModalKeybinds {
     select: string[];
     cancel: string[];
 }
+
+export type Mode = 'set' | 'goto' | 'delete';

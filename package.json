@@ -1,5 +1,5 @@
 {
-  "name": "vim-marks-impl",
+  "name": "tether-marks-for-obsidian",
   "version": "1.0.0",
   "description": "A plugin for Obsidian that mimics Vim global marks functionality, allowing users to set file references within key symbol registers and navigate to them.",
   "main": "dist/main.js",
@@ -14,7 +14,8 @@
     "obsidian",
     "plugin",
     "vim",
-    "marks"
+    "marks",
+    "harpoon"
   ],
   "author": "Your Name",
   "license": "MIT",
@@ -33,10 +34,10 @@
   },
   "repository": {
     "type": "git",
-    "url": "https://github.com/yourusername/vim-marks-impl.git"
+    "url": "https://github.com/Zetaniis/tether-marks-for-obsidian.git"
   },
   "bugs": {
-    "url": "https://github.com/yourusername/vim-marks-impl/issues"
+    "url": "https://github.com/Zetaniis/tether-marks-for-obsidian/issues"
   },
-  "homepage": "https://github.com/yourusername/vim-marks-impl#readme"
+  "homepage": "https://github.com/Zetaniis/tether-marks-for-obsidian#readme"
 }

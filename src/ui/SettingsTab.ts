@@ -1,12 +1,12 @@
 import { App, PluginSettingTab, Setting } from 'obsidian';
-import VimMarksImpl from '../main';
+import TetherMarksPlugin from '../main';
 import { Settings } from '../types/index';
 import { defaultSettings } from '../utils/defaultValues';
 
 export class SettingsTab extends PluginSettingTab {
-    plugin: VimMarksImpl;
+    plugin: TetherMarksPlugin;
 
-    constructor(app: App, plugin: VimMarksImpl) {
+    constructor(app: App, plugin: TetherMarksPlugin) {
         super(app, plugin);
         this.plugin = plugin;
     }
@@ -16,7 +16,29 @@ export class SettingsTab extends PluginSettingTab {
         containerEl.empty();
         const ds = defaultSettings;
 
-        containerEl.createEl('h4', { text: 'General' });
+        new Setting(containerEl)
+            .setName('Open mark in new tab')
+            .setDesc('Open a file in the new tab when using "go to" command. If disabled, it will open the file in the current tab.')
+            .addToggle(toggle => toggle
+                .setValue(this.plugin.settings.openMarkInNewTab ?? ds.openMarkInNewTab)
+                .onChange(async (value) => {
+                    this.plugin.settings.openMarkInNewTab = value;
+                    await this.plugin.saveSettings();
+                })
+            );
+
+        new Setting(containerEl)
+            .setName('No duplication of opened files when using goto (experimental)')
+            .setDesc('Prevents duplicate tabs when switching to already opened files using the mark list after restarting Obsidian. (Experimental: may not work in future Obsidian versions.)')
+            .addToggle(toggle => toggle
+                .setValue(this.plugin.settings.experimentalGoto ?? ds.experimentalGoto)
+                .onChange(async (value) => {
+                    this.plugin.settings.experimentalGoto = value;
+                    await this.plugin.saveSettings();
+                })
+            );
+
+        new Setting(containerEl).setName('General registers').setHeading();
         this.createRegisterListSetting(containerEl, "Register list", ds.registerList, 'Key symbols to be used as registers. Only include symbols that you can input with a single keystroke.', 'registerList')
             .addExtraButton((btn) => {
                 btn
@@ -52,29 +74,8 @@ export class SettingsTab extends PluginSettingTab {
         //             await this.plugin.saveSettings();
         //         }));
 
-        new Setting(containerEl)
-            .setName('Open mark in new tab')
-            .setDesc('Open a file in the new tab when using "go to" command. If disabled, it will open the file in the current tab.')
-            .addToggle(toggle => toggle
-                .setValue(this.plugin.settings.openMarkInNewTab ?? ds.openMarkInNewTab)
-                .onChange(async (value) => {
-                    this.plugin.settings.openMarkInNewTab = value;
-                    await this.plugin.saveSettings();
-                })
-            );
 
-        new Setting(containerEl)
-            .setName('No duplication of opened files when using goto (experimental)')
-            .setDesc('Prevents duplicate tabs when switching to already opened files using the mark list after restarting Obsidian. (Experimental: may not work in future Obsidian versions.)')
-            .addToggle(toggle => toggle
-                .setValue(this.plugin.settings.experimentalGoto ?? ds.experimentalGoto)
-                .onChange(async (value) => {
-                    this.plugin.settings.experimentalGoto = value;
-                    await this.plugin.saveSettings();
-                })
-            );
-
-        containerEl.createEl('h4', { text: 'Harpoon registers' });
+        new Setting(containerEl).setName('Harpoon registers').setHeading();
         this.createRegisterListSetting(containerEl, "Harpoon register list", ds.harpoonRegisterList, 'Key symbols to be used as Harpoon registers. Only include symbols that you can input with a single keystroke.', 'harpoonRegisterList')
             .addExtraButton((btn) => {
                 btn
@@ -114,11 +115,11 @@ export class SettingsTab extends PluginSettingTab {
         // Add keyboard shortcut settings
         // TODO: setting those values here like feels wrong, especially passing object property as string
         containerEl.createEl('h4', { text: 'List navigation shortcuts' });
-        this.createShortcutSetting(containerEl, 'Up', ds.modalListUp, 'Shortcut for moving up in the list', 'markListUp');
-        this.createShortcutSetting(containerEl, 'Down', ds.modalListDown, 'Shortcut for moving down in the list', 'markListDown');
-        this.createShortcutSetting(containerEl, 'Select', ds.modalListSelect, 'Shortcut for selecting a mark', 'markListSelect');
-        this.createShortcutSetting(containerEl, 'Cancel', ds.modalListCancel, 'Shortcut for cancelling the modal', 'markListCancel');
-        this.createShortcutSetting(containerEl, 'Delete', ds.modalListDelete, 'Shortcut for deleting a mark', 'markListDelete');
+        this.createShortcutSetting(containerEl, 'Up', ds.modalListUp, 'Shortcut for moving up in the list', 'modalListUp');
+        this.createShortcutSetting(containerEl, 'Down', ds.modalListDown, 'Shortcut for moving down in the list', 'modalListDown');
+        this.createShortcutSetting(containerEl, 'Select', ds.modalListSelect, 'Shortcut for selecting a mark', 'modalListSelect');
+        this.createShortcutSetting(containerEl, 'Cancel', ds.modalListCancel, 'Shortcut for cancelling the modal', 'modalListCancel');
+        this.createShortcutSetting(containerEl, 'Delete', ds.modalListDelete, 'Shortcut for deleting a mark', 'modalListDelete');
 
 
     }

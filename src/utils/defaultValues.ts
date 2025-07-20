@@ -1,4 +1,4 @@
-import { ModalKeybinds } from "../types";
+import { ModalKeybinds, Settings, Mode } from "../types";
 
 export const modalDefaultKeybinds: ModalKeybinds = {
     up: ['ctrl+k', 'ctrl+p'] as string[],
@@ -17,16 +17,14 @@ export const modalDefaultKeybindsMac: ModalKeybinds = {
 }
 
 // This is not used for now
-export const modalPlaceholderMessages = {
+export const modalPlaceholderMessages : Record<Mode, string> = {
     set: 'Select a mark to set',
     goto: 'Select a mark to go to',
     delete: 'Select a mark to delete',
 };
 
-export type Mode = 'set' | 'goto' | 'delete';
-
-export const defaultSettings = {
-    hideMarkListDuringInput: false,
+export const defaultSettings: Settings = {
+    // hideMarkListDuringInput: false,
     modalListUp: '',
     modalListDown: '',
     modalListSelect: '',
@@ -47,3 +45,9 @@ export const modalMarkFilepathClass = 'mark-file-path';
 export const modalMarkHarpoonSign = 'harpoon-sign';
 
 export const JSONschemaVersion = 1;
+
+export const modeDescription : Record<Mode, string> = {
+    'set': 'Set mark',
+    'goto': 'Go to mark',
+    'delete': 'Delete mark'
+}

@@ -1,48 +1,38 @@
 /* MarkListModal instructions panel styling */
 .modal-instruction-el {
-    padding: 8px 12px;
+    padding: var(--size-4-2, 8px) var(--size-4-3, 12px);
     border-top: 1px solid var(--background-modifier-border);
-    font-size: 0.95em;
+    font-size: var(--font-ui-small, 0.95em);
     color: var(--text-muted);
     display: flex;
     flex-direction: row;
     align-items: center;
     flex-wrap: wrap;
     justify-content: center;
-    gap: 0.5rem;
+    gap: var(--size-4-2, 0.5rem);
     background: var(--background-secondary);
-}
-
-.modal-instruction-el kbd {
-    font-family: inherit;
-    padding: 2px 6px;
-    border-radius: 4px;
-    border: 1px solid var(--background-modifier-border);
-    background: var(--background-secondary-alt);
+    font-family: var(--font-default);
+    line-height: var(--line-height-tight);
 }
 
 .modal-instruction-el span {
-    margin-left: 1rem;;
-    margin-right: 1rem;;
+    margin-left: var(--size-4-3, 1rem);
+    margin-right: var(--size-4-3, 1rem);
 }
 
 .marks-modal .suggestion-item {
-    padding: 0.5rem 0.5rem;
+    padding: var(--size-4-2, 0.5rem) var(--size-4-2, 0.5rem);
     display: flex;
     flex-direction: row;
     align-items: center;
 }
 
 .prompt-results > .suggestion-item  .mark-symbol {
-    /* min-width: 2.5em; */
-    max-width: 1.5em;
-    /* width: 0.1rem; */
-    flex: 0 0 2.5em;
+    flex: 0 0 var(--size-4-6);
     text-align: center;
-    margin-right: 1em;
-    font-family: inherit;
-    border-radius: 4px;
-    border: 1px solid var(--background-modifier-border);
+    margin-right: var(--size-4-3, 1em);
+    font-family: var(--font-monospace);
+    border-radius: var(--radius-s);
     background: var(--background-secondary-alt);
 }
 
@@ -54,14 +44,11 @@
 }
 
 .prompt-results > .suggestion-item  .harpoon-sign {
-    /* min-width: 2.5em; */
-    max-width: 1.5em;
-    /* width: 0.1rem; */
-    flex: 0 0 2.5em;
+    flex: 0 0 var(--size-4-6);
     text-align: center;
-    /* margin-right: 0.5em; */
-    font-family: inherit;
-    border-radius: 4px;
+    margin-left: var(--size-4-3, 1em);
+    border-radius: var(--radius-s);
     border: 1px solid var(--background-modifier-border);
     background: var(--background-secondary-alt);
+    font-family: var(--font-monospace);
 }

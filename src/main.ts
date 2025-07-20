@@ -4,7 +4,7 @@ import { SettingsTab } from './ui/SettingsTab';
 import { loadSettings, saveSettings, loadMarks, saveMarks, JSONschemaCheck } from './utils/storage';
 import { Settings, Mark } from './types/index';
 
-export default class VimMarksImpl extends Plugin {
+export default class TetherMarksPlugin extends Plugin {
     settings!: Settings;
     marks: Mark[] = [];
 
@@ -46,7 +46,7 @@ export default class VimMarksImpl extends Plugin {
 
         this.addSettingTab(new SettingsTab(this.app, this));
 
-        console.log('loading tether-marks');
+        console.log('loading ' + this.manifest.id);
     }
 
     async saveSettings() {
@@ -59,7 +59,6 @@ export default class VimMarksImpl extends Plugin {
     }
 
     onunload() {
-        // Potential cleanup
-        console.log('unloading tether-marks');
+        console.log('unloading ' + this.manifest.id);
     }
 }

@@ -1,8 +1,8 @@
 {
-  "id": "tether-marks-obsidian",
-  "name": "Tether marks",
+  "id": "tether-marks-for-obsidian",
+  "name": "Tether marks for Obsidian",
   "version": "1.0.0",
-  "description": "A plugin inspired by vim marks, allowing users to set file references within key symbol registers and navigate to them.",
+  "description": "Assign files to key registers, and quickly jump to them with a single keystroke.",
   "author": "Zetaniis",
   "minAppVersion": "0.12.0",
   "main": "main.js",

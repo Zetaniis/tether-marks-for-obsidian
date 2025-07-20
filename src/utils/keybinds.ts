@@ -6,24 +6,24 @@ import { Settings } from "../types";
 export function prepareKeybinds(isMacOS: boolean, settings: Settings) {
     let keybinds: ModalKeybinds = (!isMacOS) ? { ...modalDefaultKeybinds } : { ...modalDefaultKeybindsMac };
 
-    if (settings.markListUp) {
-        keybinds.up = [settings.markListUp];
+    if (settings.modalListUp) {
+        keybinds.up = [settings.modalListUp];
     }
 
-    if (settings.markListDown) {
-        keybinds.down = [settings.markListDown];
+    if (settings.modalListDown) {
+        keybinds.down = [settings.modalListDown];
     }
 
-    if (settings.markListDelete) {
-        keybinds.delete = [settings.markListDelete];
+    if (settings.modalListDelete) {
+        keybinds.delete = [settings.modalListDelete];
     }
 
-    if (settings.markListSelect){
-        keybinds.select = [settings.markListSelect];
+    if (settings.modalListSelect){
+        keybinds.select = [settings.modalListSelect];
     }
 
-    if (settings.markListCancel){
-        keybinds.cancel = [settings.markListCancel];
+    if (settings.modalListCancel){
+        keybinds.cancel = [settings.modalListCancel];
     }
  
     return keybinds;

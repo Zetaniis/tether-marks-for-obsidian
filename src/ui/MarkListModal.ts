@@ -1,26 +1,37 @@
-import { App, Notice, SuggestModal, Platform } from 'obsidian';
-import VimMarksImpl from '../main';
+import { App, Notice, SuggestModal, Platform, Instruction } from 'obsidian';
+import TetherMarksPlugin from '../main';
 import { ModalKeybinds, Mark } from '../types/index';
-import { modalInstructionElClass, modalMarkFilepathClass, modalMarkSymbolClass, Mode, modalPlaceholderMessages, modalMarkHarpoonSign } from '../utils/defaultValues';
+import { modalInstructionElClass, modalMarkFilepathClass, modalMarkSymbolClass, modalPlaceholderMessages, modalMarkHarpoonSign, modeDescription } from '../utils/defaultValues';
+import { Mode } from "../types";
 import { findFirstUnusedRegister, getMarkBySymbol, getSortedAndFilteredMarks, removeGapsForHarpoonMarks, setNewOrOverwriteMark } from '../utils/marks';
 import { matchKeybind, prepareKeybinds } from '../utils/keybinds';
 import { navigateToOpenFileByPath, openNewFile as openNewFileByPath } from '../utils/obsidianUtils';
 
 
 export class MarkListModal extends SuggestModal<Mark> {
-    plugin: VimMarksImpl;
+    plugin: TetherMarksPlugin;
     mode: Mode;
     private _keyHandler?: (evt: KeyboardEvent) => void;
     isHarpoonMode: boolean;
 
-    constructor(app: App, plugin: VimMarksImpl, mode: Mode, isHarpoonMode: boolean = false) {
+    constructor(app: App, plugin: TetherMarksPlugin, mode: Mode, isHarpoonMode: boolean = false) {
         super(app);
         this.plugin = plugin;
         this.mode = mode;
-        // this.marks = plugin.marks;
-        this.setPlaceholder(modalPlaceholderMessages[this.mode]);
-        // this.setInstructions([{command: 'vim-marks:mark-list', purpose: "asdf"}]);
-        this.isHarpoonMode = isHarpoonMode; // Default to false, can be set externally
+        // not used, no input field
+        // this.setPlaceholder(modalPlaceholderMessages[this.mode]);
+        this.isHarpoonMode = isHarpoonMode;
+    }
+
+    getInstructions(modalKeybinds: ModalKeybinds): Instruction[] {
+        return [
+            { command: modalKeybinds.up.join("/"), purpose: 'Up' },
+            { command: modalKeybinds.down.join("/"), purpose: 'Down' },
+            { command: 'Symbol', purpose: modeDescription[this.mode] },
+            { command: modalKeybinds.select.join("/"), purpose: modeDescription[this.mode] },
+            { command: modalKeybinds.delete.join("/"), purpose: 'Delete' },
+            { command: modalKeybinds.cancel.join("/"), purpose: 'Cancel' },
+        ];
     }
 
     getSuggestions(query: string): Mark[] {
@@ -40,9 +51,9 @@ export class MarkListModal extends SuggestModal<Mark> {
         });
     }
 
-    // Override to hide the input box
     onOpen() {
         super.onOpen();
+        // Hide the input box, as it's not needed
         if (this.inputEl) {
             this.inputEl.style.display = 'none';
         }
@@ -50,11 +61,7 @@ export class MarkListModal extends SuggestModal<Mark> {
 
         const modalKeybinds = prepareKeybinds(Platform.isMacOS, this.plugin.settings);
 
-        // Prompt instructions panel
-        const modalInstructions = this.prepareModalInstructionElement(modalKeybinds);
-
-        // Insert instructions panel at the bottom of the modal
-        this.modalEl.appendChild(modalInstructions);
+        this.setInstructions(this.getInstructions(modalKeybinds));
 
         this._keyHandler = this.getModalKeyHandler(modalKeybinds);
         window.addEventListener('keydown', this._keyHandler, true);
@@ -70,26 +77,6 @@ export class MarkListModal extends SuggestModal<Mark> {
             this._keyHandler = undefined;
         }
         super.onClose();
-    }
-
-    private prepareModalInstructionElement(keybinds: ModalKeybinds) {
-        const instructions = document.createElement('div');
-        instructions.addClass(modalInstructionElClass);
-        // Helper to format keybinds for display
-        const formatKeys = (keys: string[]) => keys.map(
-            k => `<kbd>${k.replace('cmd', '⌘').replace('ctrl', 'Ctrl').replace('alt', 'Alt').replace('shift', 'Shift')}</kbd>`
-        ).join('/');
-
-        instructions.innerHTML = `
-            <span>${formatKeys(keybinds.up)} : Up</span>
-            <span>${formatKeys(keybinds.down)} : Down</span>
-            <span>${formatKeys(keybinds.delete)} : Delete</span>
-            <span><kbd>Symbol</kbd> : Jump/Set/Delete</span>
-            <span>${formatKeys(keybinds.select)} : Confirm</span>
-            <span>${formatKeys(keybinds.cancel)} : Close</span>
-
-        `;
-        return instructions;
     }
 
     getModalKeyHandler(keybinds: ModalKeybinds) {
@@ -140,6 +127,7 @@ export class MarkListModal extends SuggestModal<Mark> {
                         const file = this.app.workspace.getActiveFile();
                         if (!file) {
                             new Notice('No active file to mark.');
+                            this.close();
                             return;
                         }
                         mark = { symbol: evt.key, filePath: file.path };
