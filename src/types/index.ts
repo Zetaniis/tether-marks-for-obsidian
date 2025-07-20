@@ -17,6 +17,7 @@ export interface Settings {
     modalListSelect: string;
     modalListCancel: string;
     modalListDelete: string,
+    modalListUndo: string,
 }
 
 export interface ModalKeybinds {
@@ -25,6 +26,7 @@ export interface ModalKeybinds {
     delete: string[];
     select: string[];
     cancel: string[];
+    undo: string[];
 }
 
 export type Mode = 'set' | 'goto' | 'delete';

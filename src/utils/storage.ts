@@ -23,6 +23,16 @@ export async function saveMarks(plugin: TetherMarksPlugin, marks: Mark[]) {
     await plugin.saveData(data);
 }
 
+export async function loadLastChangedMark(plugin: TetherMarksPlugin): Promise<Mark> {
+    return (await plugin.loadData())?.lastChangedMark || [];
+}
+
+export async function saveLastChangedMark(plugin: TetherMarksPlugin, lastChangedMark: Mark) {
+    const data = await plugin.loadData() || {};
+    data.lastChangedMark = lastChangedMark;
+    await plugin.saveData(data);
+}
+
 export async function JSONschemaCheck(plugin: TetherMarksPlugin) {
     const data = await plugin.loadData() || {schemaVersion: latestJSONSchemaVersion};
 

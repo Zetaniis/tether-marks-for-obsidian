@@ -71,6 +71,15 @@ export function removeGapsForHarpoonMarks(marksToCopy: Mark[], harpoonRegisters:
     return marks;
 }
 
+export function restoreLastChangedMark(marks: Mark[], lastChangedMark : Mark) : {marks: Mark[], markToDiscard: Mark | undefined} {
+    const markToRestore = { ...lastChangedMark };
+    const markToDiscard = marks.find(m => m.symbol === markToRestore.symbol);
+    const marksWithoutDiscarded = marks.filter(m => m.symbol !== markToRestore.symbol);
+
+    marksWithoutDiscarded.push({ symbol: markToRestore.symbol, filePath: markToRestore.filePath });
+    return {marks: marksWithoutDiscarded, markToDiscard: markToDiscard}
+}
+
 export function setNewOrOverwriteMark(marks: Mark[], setMark : Mark, filePath : string) : Mark[]{
     const outMarks = marks.filter((m) => m.symbol !== setMark.symbol);
     outMarks.push({ symbol: setMark.symbol, filePath: filePath });

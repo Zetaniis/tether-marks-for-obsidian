@@ -120,6 +120,7 @@ export class SettingsTab extends PluginSettingTab {
         this.createShortcutSetting(containerEl, 'Select', ds.modalListSelect, 'Shortcut for selecting a mark', 'modalListSelect');
         this.createShortcutSetting(containerEl, 'Cancel', ds.modalListCancel, 'Shortcut for cancelling the modal', 'modalListCancel');
         this.createShortcutSetting(containerEl, 'Delete', ds.modalListDelete, 'Shortcut for deleting a mark', 'modalListDelete');
+        this.createShortcutSetting(containerEl, 'Restore last changed mark', ds.modalListUndo, 'Shortcut for undoing last action of changing a mark', 'modalListUndo');
 
 
     }

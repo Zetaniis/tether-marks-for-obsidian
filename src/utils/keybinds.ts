@@ -18,14 +18,18 @@ export function prepareKeybinds(isMacOS: boolean, settings: Settings) {
         keybinds.delete = [settings.modalListDelete];
     }
 
-    if (settings.modalListSelect){
+    if (settings.modalListSelect) {
         keybinds.select = [settings.modalListSelect];
     }
 
-    if (settings.modalListCancel){
+    if (settings.modalListUndo) {
+        keybinds.undo = [settings.modalListUndo];
+    }
+
+    if (settings.modalListCancel) {
         keybinds.cancel = [settings.modalListCancel];
     }
- 
+
     return keybinds;
 }
 
