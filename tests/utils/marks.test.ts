@@ -4,7 +4,9 @@ import {
     sortMarksAlphabetically,
     getSortedAndFilteredMarks,
     sortMarksBySettingsRegisterOrder,
-    removeGapsForHarpoonMarks
+    removeGapsForHarpoonMarks,
+    setNewOrOverwriteMark,
+    deleteMark
 } from '../../src/utils/marks';
 import { Mark, Settings } from '../../src/types/index';
 import { defaultSettings } from '../../src/utils/defaultValues';
@@ -123,5 +125,50 @@ describe('marks utils', () => {
             expect(result[0].filePath).toBe('fileA.md');
             expect(result[1].filePath).toBe('fileC.md');
             expect(result[2].filePath).toBe('fileE.md');
-        })})
+        });
+    });
+
+    describe('setNewOrOverwriteMark', () => {
+        it('overwrites a mark and check overwritten contents', () => {
+            const markToOverwrite = { symbol: 'A', filePath: '' };
+            const filePath = 'fileAover.md';
+            const { marks: result, overwrittenMark } = setNewOrOverwriteMark(marks, markToOverwrite, filePath);
+            expect(result.find(el => el.filePath == filePath)).toEqual({ symbol: markToOverwrite.symbol, filePath: filePath });
+            expect(overwrittenMark).toEqual({ symbol: markToOverwrite.symbol, filePath: 'fileA.md' })
+        });
+
+        it('sets new mark with no overwritten contents', () => {
+            const ms = [
+                { symbol: 'B', filePath: 'fileB.md' },
+                { symbol: 'C', filePath: 'fileC.md' },
+                { symbol: 'E', filePath: 'fileE.md' }
+            ];
+            const markToOverwrite = { symbol: 'A', filePath: '' };
+            const filePath = 'fileAset.md';
+            const { marks: result, overwrittenMark } = setNewOrOverwriteMark(ms, markToOverwrite, filePath);
+            expect(result.find(el => el.filePath == filePath)).toEqual({ symbol: markToOverwrite.symbol, filePath: filePath });
+            expect(overwrittenMark).toEqual(undefined)
+        });
+    });
+
+    describe('deleteMark', () => {
+        it('deletes mark in a list', () => {
+            const markToDelete = { symbol: 'A', filePath: '' };
+            const { marks: result, deletedMark } = deleteMark(marks, markToDelete);
+            expect(result.find(el => el.symbol == markToDelete.symbol)).toEqual(undefined);
+            expect(deletedMark).toEqual({ symbol: 'A', filePath: 'fileA.md' });
+        });
+    
+        it('deletes mark not in a list', () => {
+            const ms = [
+                { symbol: 'B', filePath: 'fileB.md' },
+                { symbol: 'C', filePath: 'fileC.md' },
+                { symbol: 'E', filePath: 'fileE.md' }
+            ];
+            const markToDelete = { symbol: 'O', filePath: '' };
+            const { marks: result, deletedMark } = deleteMark(ms, markToDelete);
+            expect(result.find(el => el.symbol == markToDelete.symbol)).toEqual(undefined);
+            expect(deletedMark).toEqual(undefined);
+        });
+    });
 });
