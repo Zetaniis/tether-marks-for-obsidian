@@ -5,7 +5,7 @@ import { modalInstructionElClass, modalMarkFilepathClass, modalMarkSymbolClass, 
 import { Mode } from "../types";
 import { findFirstUnusedRegister, getMarkBySymbol, getSortedAndFilteredMarks, removeGapsForHarpoonMarks, setNewOrOverwriteMark } from '../utils/marks';
 import { matchKeybind, prepareKeybinds } from '../utils/keybinds';
-import { navigateToOpenFileByPath, openNewFile as openNewFileByPath } from '../utils/obsidianUtils';
+import { navigateToOpenedFileByPath, openNewFile as openNewFileByPath } from '../utils/obsidianUtils';
 
 
 export class MarkListModal extends SuggestModal<Mark> {
@@ -189,7 +189,7 @@ export class MarkListModal extends SuggestModal<Mark> {
     }
 
     goToMark(mark: Mark) {
-        const success = navigateToOpenFileByPath(mark.filePath, this.plugin.settings.experimentalGoto, this.app);
+        const success = navigateToOpenedFileByPath(mark.filePath, this.plugin.settings.experimentalGoto, this.app);
         // If file not open, then open it in the preferred tab
         if (!success) {
             openNewFileByPath(mark.filePath, this.plugin.settings.openMarkInNewTab, this.app);

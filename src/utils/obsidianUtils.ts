@@ -1,4 +1,4 @@
-import { App, MarkdownView, normalizePath, Notice, TFile } from "obsidian";
+import { App, normalizePath, Notice, TFile, WorkspaceLeaf } from "obsidian";
 
 export function openNewFile(filePath: string, openFileInNewTab: boolean, app: App) {
     const file = app.vault.getAbstractFileByPath(filePath);
@@ -14,49 +14,41 @@ export function openNewFile(filePath: string, openFileInNewTab: boolean, app: Ap
     }
 }
 
+/**
+ * Finds all opened files in the main area through workspace.getLayout(). Not API compliant. Can break anytime. Gets all opened files regardless of state. 
+ * */
 export function getAllOpenedFilesExperimental(app: App): any {
-    // Check if the file is already open in a leaf, wonky but finds all
-    // TODO: I could make a function that does this, but only for specified pane if there is a need for optimization.
-    // eg.: using app.workspace.getLeaf().parent.children will get all the tabs in the current pane
     // @ts-ignore
     const tabGroups = app.workspace.getLayout().main?.children;
     const out = [];
-    for (const el of tabGroups){
+    for (const el of tabGroups) {
         out.push(...el.children)
     }
     return out;
-
-    // const app = this.app;
-    // const files = new Set<TFile>();
-    // const layout = app.workspace.getLayout();
-
-    // function collectFiles(node: any) {
-    //     if (!node) return;
-    //     if (node.type === 'leaf' && node.state?.file) {
-    //         const file = app.vault.getAbstractFileByPath(node.state.file);
-    //         if (file instanceof TFile) files.add(file);
-    //     }
-    //     if (node.children && Array.isArray(node.children)) {
-    //         for (const child of node.children) collectFiles(child);
-    //     }
-    // }
-
-    // // Traverse all possible roots
-    // for (const key of ['main', 'left', 'right', 'center', 'popout']) {
-    //     if (layout[key]) collectFiles(layout[key]);
-    // }
-
-    // return Array.from(files);
 }
 
-export function navigateToOpenFileByPath(filePath: string, experimentalGoto: boolean, app: App): boolean {
+/**
+ * Finds all workspace leaves through workspace.iterateAllLeaves. API compliant. Ignores all the non instantiated leaves.
+ * */
+export function getAllWorkspaceLeaves(app: App): WorkspaceLeaf[] {
+    const list: WorkspaceLeaf[] = []
+    app.workspace.iterateAllLeaves(leaf => {
+        list.push(leaf);
+    });
+
+    return list;
+}
+
+/**
+ * Sets active an opened file that matches the input file path. Respects tab grouping. Returns success bool.  
+ * @public
+ * */
+export function navigateToOpenedFileByPath(filePath: string, experimentalGoto: boolean, app: App): boolean {
     if (experimentalGoto) {
         const openedFiles = getAllOpenedFilesExperimental(app)
         for (const openedFile of openedFiles) {
             if (openedFile.type == 'leaf' && openedFile.state.state.file === filePath) {
-                // If the file is already open, switch to it
                 const leaf = app.workspace.getLeafById(openedFile.id);
-                // console.log('Found leaf for file:', openedFile.state.state.file, openedFile.id, leaf);
                 if (leaf && leaf.parent === app.workspace.getLeaf().parent) {
                     app.workspace.setActiveLeaf(leaf, { focus: true });
                     return true;
@@ -65,15 +57,16 @@ export function navigateToOpenFileByPath(filePath: string, experimentalGoto: boo
         }
     }
     else {
-        // Check if the file is already open in a leaf, misses already opened files that were opened in previous obsidian sessions
-        const leaves = app.workspace.getLeavesOfType('markdown');
+        const leaves = getAllWorkspaceLeaves(app);
         for (const leaf of leaves) {
             const view = leaf.view;
-            if (view instanceof MarkdownView && view.file && view.file.path === filePath && leaf.parent === app.workspace.getLeaf().parent) {
+            // @ts-expect-error
+            if (view.file && view.file.path === filePath && leaf.parent === app.workspace.getLeaf().parent) {
                 app.workspace.setActiveLeaf(leaf, { focus: true });
                 return true;
             }
         }
     }
+
     return false;
 }
