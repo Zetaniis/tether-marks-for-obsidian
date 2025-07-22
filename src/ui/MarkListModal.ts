@@ -3,7 +3,7 @@ import TetherMarksPlugin from '../main';
 import { ModalKeybinds, Mark } from '../types/index';
 import { modalInstructionElClass, modalMarkFilepathClass, modalMarkSymbolClass, modalPlaceholderMessages, modalMarkHarpoonSign, modeDescription } from '../utils/defaultValues';
 import { Mode } from "../types";
-import { findFirstUnusedRegister, getMarkBySymbol, getSortedAndFilteredMarks, removeGapsForHarpoonMarks, setNewOrOverwriteMark } from '../utils/marks';
+import { deleteMark, findFirstUnusedRegister, getMarkBySymbol, getSortedAndFilteredMarks, removeGapsForHarpoonMarks, setNewOrOverwriteMark } from '../utils/marks';
 import { matchKeybind, prepareKeybinds } from '../utils/keybinds';
 import { navigateToOpenedFileByPath, openNewFile as openNewFileByPath } from '../utils/obsidianUtils';
 
@@ -27,7 +27,7 @@ export class MarkListModal extends SuggestModal<Mark> {
         return [
             { command: modalKeybinds.up.join("/"), purpose: 'Up' },
             { command: modalKeybinds.down.join("/"), purpose: 'Down' },
-            { command: 'Symbol', purpose: modeDescription[this.mode] },
+            { command: '[Symbol]', purpose: modeDescription[this.mode] },
             { command: modalKeybinds.select.join("/"), purpose: modeDescription[this.mode] },
             { command: modalKeybinds.delete.join("/"), purpose: 'Delete' },
             { command: modalKeybinds.cancel.join("/"), purpose: 'Cancel' },
@@ -60,7 +60,6 @@ export class MarkListModal extends SuggestModal<Mark> {
         this.modalEl.addClass('marks-modal');
 
         const modalKeybinds = prepareKeybinds(Platform.isMacOS, this.plugin.settings);
-
         this.setInstructions(this.getInstructions(modalKeybinds));
 
         this._keyHandler = this.getModalKeyHandler(modalKeybinds);
@@ -123,14 +122,7 @@ export class MarkListModal extends SuggestModal<Mark> {
                 let mark = getMarkBySymbol(this.plugin.marks, evt.key);
                 if (this.mode === 'set') {
                     if (mark == null) {
-                        // Create a new mark for this key symbol
-                        const file = this.app.workspace.getActiveFile();
-                        if (!file) {
-                            new Notice('No active file to mark.');
-                            this.close();
-                            return;
-                        }
-                        mark = { symbol: evt.key, filePath: file.path };
+                        mark = { symbol: evt.key, filePath: "" };
                     }
                     evt.preventDefault();
                     await this.onChooseSuggestion(mark, evt);
@@ -183,7 +175,7 @@ export class MarkListModal extends SuggestModal<Mark> {
             new Notice('No active file to mark.');
             return;
         }
-        const marks = setNewOrOverwriteMark(this.plugin.marks, mark, file.path);
+        const { marks, overwrittenMark } = setNewOrOverwriteMark(this.plugin.marks, mark, file.path);
         await this.plugin.saveMarks(marks);
         new Notice(`Set mark '${mark.symbol}' to ${file.name}`);
     }
@@ -197,15 +189,14 @@ export class MarkListModal extends SuggestModal<Mark> {
     }
 
     private async deleteMark(mark: Mark) {
-        const cMark = { ...mark };
-        const filteredMarks = this.plugin.marks.filter(m => m.symbol !== cMark.symbol);
-        await this.plugin.saveMarks(filteredMarks);
+        const { marks, deletedMark } = deleteMark(this.plugin.marks, mark);
+        await this.plugin.saveMarks(marks);
 
         if (this.plugin.settings.harpoonRegisterGapRemoval) {
             this.removeGapsForHarpoonMarks();
         }
 
-        new Notice(`Deleted mark '${cMark.symbol}'`);
+        new Notice(`Deleted mark '${deletedMark?.symbol}'`);
     };
 
     addFileToHarpoon() {
@@ -213,12 +204,17 @@ export class MarkListModal extends SuggestModal<Mark> {
         const harpoonRegisters = this.plugin.settings.harpoonRegisterList.split('');
         const reg = findFirstUnusedRegister(this.plugin.marks, harpoonRegisters);
 
-        if (!reg) {
-            // If all registers are used, show a notice
-            new Notice('Harpoon registers are full, cannot add more marks.');
+        if (reg) {
+            const file = this.app.workspace.getActiveFile();
+            if (!file) {
+                new Notice('No active file to mark.');
+                return;
+            }
+            this.setNewOrOverwriteMark({ symbol: reg, filePath: file.path });
         }
         else {
-            this.setNewOrOverwriteMark({ symbol: reg, filePath: this.app.workspace.getActiveFile()?.path || '' });
+            // If all registers are used, show a notice
+            new Notice('Harpoon registers are full, cannot add more marks.');
         }
     }
 
