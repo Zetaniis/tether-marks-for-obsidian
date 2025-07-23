@@ -24,7 +24,7 @@ export async function saveMarks(plugin: TetherMarksPlugin, marks: Mark[]) {
 }
 
 export async function loadLastChangedMark(plugin: TetherMarksPlugin): Promise<Mark> {
-    return (await plugin.loadData())?.lastChangedMark || [];
+    return (await plugin.loadData())?.lastChangedMark || {};
 }
 
 export async function saveLastChangedMark(plugin: TetherMarksPlugin, lastChangedMark: Mark) {

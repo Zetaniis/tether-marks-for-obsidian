@@ -6,6 +6,7 @@ Assign files to key registers, and quickly jump to them with a single keystroke.
 - Navigate to files using a list of set marks.
 - Use [Harpoon](https://github.com/ThePrimeagen/harpoon)-like workflow in your Obsidian vault. 
 - Set custom key symbols as registers. You can use anything as long as it is a single keystroke (excluding modifiers: ctrl, shift, alt) and is considered as one symbol. 
+- Undo last overwritten or deleted mark
 
 ## Installation
 
@@ -17,7 +18,6 @@ Assign files to key registers, and quickly jump to them with a single keystroke.
 ### BRAT
  - Install the BRAT plugin from Community plugins
  - In the BRAT options, click on Add Beta plugin and enter `https://github.com/Zetaniis/tether-marks-for-obsidian`
- - The plugin will auto update on every Obsidian startup
 
 ## First time configuration
 For maximum efficiency, the plugin is intended to be used via keyboard shortcuts. Be sure to set some through the hotkeys and plugin settings UIs. 

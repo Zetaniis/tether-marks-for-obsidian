@@ -102,21 +102,18 @@ export class MarkListModal extends SuggestModal<Mark> {
                     chooser.values = getSortedAndFilteredMarks(this.plugin.marks, this.isHarpoonMode, this.plugin.settings);
                     chooser.setSuggestions(chooser.values);
                     // Preserve selection index
-                    let newIdx = prevIdx;
-                    if (newIdx >= chooser.values.length) {
-                        newIdx = chooser.values.length - 1;
-                    }
-                    chooser.setSelectedItem(Math.max(0, newIdx), false);
+                    chooser.setSelectedItem(Math.max(0, Math.min(prevIdx, chooser.values.length)), false);
                 }
             }
             else if (keybinds.undo.some(kb => matchKeybind(evt, kb))) {
-                console.error("Undo feature is bugged for now.");
                 evt.preventDefault();
                 // Restore the last changed mark
                 await this.restoreLastChangedMark();
                 // Refresh the modal list
                 chooser.values = getSortedAndFilteredMarks(this.plugin.marks, this.isHarpoonMode, this.plugin.settings);
+                const prevIdx = chooser.selectedItem;
                 chooser.setSuggestions(chooser.values);
+                chooser.setSelectedItem(Math.max(0, prevIdx), false);
             } else if (keybinds.select.some(kb => matchKeybind(evt, kb))) {
                 evt.preventDefault();
                 // Delete the currently selected mark
@@ -188,6 +185,9 @@ export class MarkListModal extends SuggestModal<Mark> {
         }
         const { marks, overwrittenMark } = setNewOrOverwriteMark(this.plugin.marks, mark, file.path);
         await this.plugin.saveMarks(marks);
+        if (overwrittenMark){
+            await this.plugin.saveLastChangedMark(overwrittenMark);
+        }
         new Notice(`Set mark '${mark.symbol}' to ${file.name}`);
     }
 
@@ -203,6 +203,10 @@ export class MarkListModal extends SuggestModal<Mark> {
         const { marks, deletedMark } = deleteMark(this.plugin.marks, mark);
         await this.plugin.saveMarks(marks);
 
+        if (deletedMark){
+            await this.plugin.saveLastChangedMark(deletedMark);
+        }
+
         if (this.plugin.settings.harpoonRegisterGapRemoval) {
             this.removeGapsForHarpoonMarks();
         }
@@ -212,7 +216,6 @@ export class MarkListModal extends SuggestModal<Mark> {
 
     async restoreLastChangedMark() {
         // Undo the last changed mark
-        // buggy
         if (this.plugin.lastChangedMark) {
             const out = restoreLastChangedMark(this.plugin.marks, this.plugin.lastChangedMark)
             await this.plugin.saveMarks(out.marks);
