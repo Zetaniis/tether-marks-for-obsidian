@@ -1,6 +1,6 @@
 import { App, normalizePath, Notice, TFile, WorkspaceLeaf } from "obsidian";
 
-export function openNewFile(filePath: string, openFileInNewTab: boolean, app: App) {
+export function openNewFileByPath(filePath: string, openFileInNewTab: boolean, app: App) {
     const file = app.vault.getAbstractFileByPath(filePath);
     if (file instanceof TFile) {
         if (openFileInNewTab) {

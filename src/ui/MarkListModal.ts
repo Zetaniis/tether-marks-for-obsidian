@@ -5,7 +5,7 @@ import { Mode } from "../types";
 import { modalInstructionElClass, modalMarkFilepathClass, modalMarkSymbolClass, modalPlaceholderMessages, modalMarkHarpoonSign, modeDescription } from '../utils/defaultValues';
 import { deleteMark, findFirstUnusedRegister, getMarkBySymbol, getSortedAndFilteredMarks, removeGapsForHarpoonMarks, restoreLastChangedMark, setNewOrOverwriteMark } from '../utils/marks';
 import { matchKeybind, prepareKeybinds } from '../utils/keybinds';
-import { navigateToOpenedFileByPath, openNewFile as openNewFileByPath } from '../utils/obsidianUtils';
+import { pluginDeleteMark, pluginGoToMark, pluginRestoreLastChangedMark, pluginSetNewOrOverwriteMark } from '../pluginOperations';
 
 
 export class MarkListModal extends SuggestModal<Mark> {
@@ -69,10 +69,6 @@ export class MarkListModal extends SuggestModal<Mark> {
     }
 
     onClose() {
-        // Remove instructions panel if present
-        const instructions = this.modalEl.querySelector("." + modalInstructionElClass);
-        if (instructions) instructions.remove();
-
         if (this._keyHandler) {
             window.removeEventListener('keydown', this._keyHandler, true);
             this._keyHandler = undefined;
@@ -97,7 +93,7 @@ export class MarkListModal extends SuggestModal<Mark> {
                 const prevIdx = chooser.selectedItem;
                 const selected: Mark = chooser.values[prevIdx];
                 if (selected) {
-                    await this.deleteMark(selected);
+                    await pluginDeleteMark(this.plugin, selected);
                     // Refresh the modal list
                     chooser.values = getSortedAndFilteredMarks(this.plugin.marks, this.isHarpoonMode, this.plugin.settings);
                     chooser.setSuggestions(chooser.values);
@@ -108,7 +104,7 @@ export class MarkListModal extends SuggestModal<Mark> {
             else if (keybinds.undo.some(kb => matchKeybind(evt, kb))) {
                 evt.preventDefault();
                 // Restore the last changed mark
-                await this.restoreLastChangedMark();
+                await pluginRestoreLastChangedMark(this.plugin);
                 // Refresh the modal list
                 chooser.values = getSortedAndFilteredMarks(this.plugin.marks, this.isHarpoonMode, this.plugin.settings);
                 const prevIdx = chooser.selectedItem;
@@ -152,11 +148,11 @@ export class MarkListModal extends SuggestModal<Mark> {
 
     async onChooseSuggestion(mark: Mark, evt: MouseEvent | KeyboardEvent) {
         if (this.mode === 'set') {
-            this.setNewOrOverwriteMark(mark);
+            pluginSetNewOrOverwriteMark(this.plugin, mark);
         } else if (this.mode === 'goto') {
-            this.goToMark(mark);
+            pluginGoToMark(this.plugin, mark);
         } else if (this.mode === 'delete') {
-            this.deleteMark(mark);
+            pluginDeleteMark(this.plugin, mark);
         }
     }
 
@@ -175,82 +171,6 @@ export class MarkListModal extends SuggestModal<Mark> {
         if (next >= max) next = 0;
         // @ts-ignore
         chooser.setSelectedItem(next, 0 as KeyboardEvent);
-    }
-
-    async setNewOrOverwriteMark(mark: Mark) {
-        const file = this.app.workspace.getActiveFile();
-        if (!file) {
-            new Notice('No active file to mark.');
-            return;
-        }
-        const { marks, overwrittenMark } = setNewOrOverwriteMark(this.plugin.marks, mark, file.path);
-        await this.plugin.saveMarks(marks);
-        if (overwrittenMark){
-            await this.plugin.saveLastChangedMark(overwrittenMark);
-        }
-        new Notice(`Set mark '${mark.symbol}' to ${file.name}`);
-    }
-
-    goToMark(mark: Mark) {
-        const success = navigateToOpenedFileByPath(mark.filePath, this.plugin.settings.experimentalGoto, this.app);
-        // If file not open, then open it in the preferred tab
-        if (!success) {
-            openNewFileByPath(mark.filePath, this.plugin.settings.openMarkInNewTab, this.app);
-        }
-    }
-
-    private async deleteMark(mark: Mark) {
-        const { marks, deletedMark } = deleteMark(this.plugin.marks, mark);
-        await this.plugin.saveMarks(marks);
-
-        if (deletedMark){
-            await this.plugin.saveLastChangedMark(deletedMark);
-        }
-
-        if (this.plugin.settings.harpoonRegisterGapRemoval) {
-            this.removeGapsForHarpoonMarks();
-        }
-
-        new Notice(`Deleted mark '${deletedMark?.symbol}'`);
-    };
-
-    async restoreLastChangedMark() {
-        // Undo the last changed mark
-        if (this.plugin.lastChangedMark) {
-            const out = restoreLastChangedMark(this.plugin.marks, this.plugin.lastChangedMark)
-            await this.plugin.saveMarks(out.marks);
-            new Notice(`Restored mark '${this.plugin.lastChangedMark.symbol}' to ${this.plugin.lastChangedMark.filePath}`);
-            if (out.markToDiscard) {
-                this.plugin.saveLastChangedMark(out.markToDiscard);
-            }
-        } else {
-            new Notice('No last changed mark to restore.');
-        }
-    }
-
-    addFileToHarpoon() {
-        // Add the selected mark to the Harpoon list
-        const harpoonRegisters = this.plugin.settings.harpoonRegisterList.split('');
-        const reg = findFirstUnusedRegister(this.plugin.marks, harpoonRegisters);
-
-        if (reg) {
-            const file = this.app.workspace.getActiveFile();
-            if (!file) {
-                new Notice('No active file to mark.');
-                return;
-            }
-            this.setNewOrOverwriteMark({ symbol: reg, filePath: file.path });
-        }
-        else {
-            // If all registers are used, show a notice
-            new Notice('Harpoon registers are full, cannot add more marks.');
-        }
-    }
-
-    async removeGapsForHarpoonMarks() {
-        const harpoonRegisters = this.plugin.settings.harpoonRegisterList.split('');
-        const marks = removeGapsForHarpoonMarks(this.plugin.marks, harpoonRegisters);
-        await this.plugin.saveMarks(marks);
     }
 
 }

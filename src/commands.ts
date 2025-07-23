@@ -1,4 +1,5 @@
 import TetherMarksPlugin from './main';
+import { pluginAddFileToHarpoon } from './pluginOperations';
 import { MarkListModal } from './ui/MarkListModal';
 
 export async function setGlobalMark(plugin: TetherMarksPlugin) {
@@ -15,7 +16,7 @@ export async function deleteGlobalMark(plugin: TetherMarksPlugin) {
 
 
 export async function addFileToHarpoon(plugin: TetherMarksPlugin) {
-    new MarkListModal(plugin.app, plugin, 'goto').addFileToHarpoon();
+    pluginAddFileToHarpoon(plugin);
 }
 
 export async function goToHarpoonMark(plugin: TetherMarksPlugin) {
