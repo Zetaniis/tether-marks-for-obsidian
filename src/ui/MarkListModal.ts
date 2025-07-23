@@ -219,8 +219,8 @@ export class MarkListModal extends SuggestModal<Mark> {
         if (this.plugin.lastChangedMark) {
             const out = restoreLastChangedMark(this.plugin.marks, this.plugin.lastChangedMark)
             await this.plugin.saveMarks(out.marks);
+            new Notice(`Restored mark '${this.plugin.lastChangedMark.symbol}' to ${this.plugin.lastChangedMark.filePath}`);
             if (out.markToDiscard) {
-                new Notice(`Restored mark '${this.plugin.lastChangedMark.symbol}' to ${this.plugin.lastChangedMark.filePath}`);
                 this.plugin.saveLastChangedMark(out.markToDiscard);
             }
         } else {
