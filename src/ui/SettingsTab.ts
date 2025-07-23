@@ -28,7 +28,7 @@ export class SettingsTab extends PluginSettingTab {
             );
 
         new Setting(containerEl)
-            .setName('No duplication of opened files when using goto (experimental)')
+            .setName('No duplication of opened files when using Go to commands (experimental)')
             .setDesc('Prevents duplicate tabs when switching to already opened files using the mark list after restarting Obsidian. (Experimental: may not work in future Obsidian versions.)')
             .addToggle(toggle => toggle
                 .setValue(this.plugin.settings.experimentalGoto ?? ds.experimentalGoto)

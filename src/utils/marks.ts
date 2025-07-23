@@ -80,8 +80,16 @@ export function restoreLastChangedMark(marks: Mark[], lastChangedMark : Mark) : 
     return {marks: marksWithoutDiscarded, markToDiscard: markToDiscard}
 }
 
-export function setNewOrOverwriteMark(marks: Mark[], setMark : Mark, filePath : string) : Mark[]{
-    const outMarks = marks.filter((m) => m.symbol !== setMark.symbol);
-    outMarks.push({ symbol: setMark.symbol, filePath: filePath });
-    return outMarks;
+
+export function setNewOrOverwriteMark(marks: Mark[], setMark : Mark, filePath : string) : {marks: Mark[], overwrittenMark?: Mark} {
+    const {marks: filteredMarks, deletedMark: overwrittenMark} =  deleteMark(marks, setMark);
+    filteredMarks.push({ symbol: setMark.symbol, filePath: filePath });
+    return {marks: filteredMarks, overwrittenMark};
+}
+
+export function deleteMark(marks: Mark[], markToDelete: Mark) : {marks: Mark[], deletedMark?: Mark} {
+    const cMark = { ...markToDelete };
+    const deletedMark = marks.find(m => m.symbol === cMark.symbol);
+    const filteredMarks = marks.filter(m => m.symbol !== cMark.symbol);
+    return {marks: filteredMarks, deletedMark};
 }
