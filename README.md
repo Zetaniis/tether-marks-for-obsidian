@@ -38,7 +38,6 @@ For all available commands that can be mapped to vim, run the ex command `obcomm
 
 ## Potential future features
 - direct navigation to previous/next harpoon mark
-- undo for the last overwritten mark
 
 ## Naming conventions
 - Register - key symbol that will be used to tether to files. 
