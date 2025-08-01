@@ -28,12 +28,14 @@
 }
 
 .prompt-results > .suggestion-item  .mark-symbol {
-    flex: 0 0 var(--size-4-6);
+    flex: 0 0 var(--size-4-5);
     text-align: center;
     margin-right: var(--size-4-3, 1em);
     font-family: var(--font-monospace);
     border-radius: var(--radius-s);
     background: var(--background-secondary-alt);
+    width: var(--size-4-5);
+    height: var(--size-4-5);
 }
 
 .prompt-results > .suggestion-item  .mark-file-path {
@@ -44,11 +46,14 @@
 }
 
 .prompt-results > .suggestion-item  .harpoon-sign {
-    flex: 0 0 var(--size-4-6);
+    flex: 0 0 var(--size-4-5);
     text-align: center;
     margin-left: var(--size-4-3, 1em);
     border-radius: var(--radius-s);
     border: 1px solid var(--background-modifier-border);
     background: var(--background-secondary-alt);
     font-family: var(--font-monospace);
+    height: var(--size-4-5);
+    width: var(--size-4-5);
 }
+    
