@@ -41,10 +41,13 @@ export class MarkListModal extends SuggestModal<Mark> {
     }
 
     renderSuggestion(mark: Mark, el: HTMLElement) {
-        el.createEl('span', { text: mark.symbol, cls: modalMarkSymbolClass });
+        const symbolEl = el.createEl('span', { text: mark.symbol, cls: modalMarkSymbolClass });
         el.createEl('span', { text: mark.filePath, cls: modalMarkFilepathClass });
         if (this.plugin.settings.harpoonRegisterList.contains(mark.symbol)) {
             el.createEl('span', { text: "H", cls: modalMarkHarpoonSign });
+        }
+        if (this.app.workspace.getActiveFile()?.path === mark.filePath){
+            symbolEl.addClass('highlight');
         }
         el.addEventListener('click', async (evt) => {
             await this.onChooseSuggestion(mark, evt);
