@@ -1,9 +1,9 @@
 import { modalDefaultKeybinds, modalDefaultKeybindsMac } from "./defaultValues";
 import { ModalKeybinds } from "../types";
-import { Settings } from "tether-marks-core";
+import { ObsidianMarksSettings } from "../types";
 
 // Utility to prepare keybinds object
-export function prepareKeybinds(isMacOS: boolean, settings: Settings) {
+export function prepareKeybinds(isMacOS: boolean, settings: ObsidianMarksSettings) {
     let keybinds: ModalKeybinds = (!isMacOS) ? { ...modalDefaultKeybinds } : { ...modalDefaultKeybindsMac };
 
     if (settings.modalListUp) {

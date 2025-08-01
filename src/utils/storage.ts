@@ -1,13 +1,14 @@
 import { Notice } from 'obsidian';
 import TetherMarksPlugin from '../main';
-import { JSONschemaVersion as latestJSONSchemaVersion } from './defaultValues';
-import { defaultSettings, Mark, Settings } from 'tether-marks-core';
+import { defaultObsidianMarksSettings, JSONschemaVersion as latestJSONSchemaVersion } from './defaultValues';
+import { Mark} from 'tether-marks-core';
+import { ObsidianMarksSettings } from '../types';
 
-export async function loadSettings(plugin: TetherMarksPlugin): Promise<Settings> {
-    return (await plugin.loadData())?.settings || defaultSettings;
+export async function loadSettings(plugin: TetherMarksPlugin): Promise<ObsidianMarksSettings> {
+    return (await plugin.loadData())?.settings || defaultObsidianMarksSettings;
 }
 
-export async function saveSettings(plugin: TetherMarksPlugin, settings: Settings) {
+export async function saveSettings(plugin: TetherMarksPlugin, settings: ObsidianMarksSettings) {
     const data = await plugin.loadData() || {};
     data.settings = settings;
     await plugin.saveData(data);

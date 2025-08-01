@@ -1,6 +1,7 @@
 import { App, PluginSettingTab, Setting } from 'obsidian';
 import TetherMarksPlugin from '../main';
-import { defaultSettings, Settings } from 'tether-marks-core';
+import { ObsidianMarksSettings } from '../types';
+import { defaultObsidianMarksSettings } from '../utils/defaultValues';
 
 export class SettingsTab extends PluginSettingTab {
     plugin: TetherMarksPlugin;
@@ -13,7 +14,7 @@ export class SettingsTab extends PluginSettingTab {
     display(): void {
         const { containerEl } = this;
         containerEl.empty();
-        const ds = defaultSettings;
+        const ds = defaultObsidianMarksSettings;
 
         new Setting(containerEl)
             .setName('Open mark in new tab')
@@ -125,7 +126,7 @@ export class SettingsTab extends PluginSettingTab {
     }
 
     // use only for string values from Settings type
-    createShortcutSetting(containerEl: HTMLElement, name: string, defaultValue: string, desc: string, key: keyof Settings) {
+    createShortcutSetting(containerEl: HTMLElement, name: string, defaultValue: string, desc: string, key: keyof ObsidianMarksSettings) {
         new Setting(containerEl)
             .setName(name)
             .setDesc(desc)
@@ -137,7 +138,7 @@ export class SettingsTab extends PluginSettingTab {
                 }));
     }
 
-    createRegisterListSetting(containerEl: HTMLElement, name: string, defaultValue: string, desc: string, key: keyof Settings): Setting {
+    createRegisterListSetting(containerEl: HTMLElement, name: string, defaultValue: string, desc: string, key: keyof ObsidianMarksSettings): Setting {
         return new Setting(containerEl)
             .setName(name)
             .setDesc(desc)

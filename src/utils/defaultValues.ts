@@ -1,4 +1,5 @@
-import { ModalKeybinds} from "../types";
+import { defaultBasicMarksSettings } from "tether-marks-core";
+import { ModalKeybinds, ObsidianMarksSettings} from "../types";
 
 export const modalDefaultKeybinds: ModalKeybinds = {
     up: ['ctrl+k', 'ctrl+p'] as string[],
@@ -24,3 +25,17 @@ export const modalMarkFilepathClass = 'mark-file-path';
 export const modalMarkHarpoonSign = 'harpoon-sign';
 
 export const JSONschemaVersion = 1;
+
+export const defaultObsidianMarksSettings : ObsidianMarksSettings = {
+    ...defaultBasicMarksSettings,
+    // hideMarkListDuringInput: false,
+    openMarkInNewTab: false, // If true, open mark in new tab, else in current tab
+    experimentalGoto: false,
+    modalListUp: '',
+    modalListDown: '',
+    modalListSelect: '',
+    modalListUndo: '',
+    modalListDelete: '',
+    modalListCancel: '',
+}
+

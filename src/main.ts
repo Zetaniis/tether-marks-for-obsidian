@@ -2,11 +2,12 @@ import { Plugin } from 'obsidian';
 import { setGlobalMark, goToGlobalMark, goToHarpoonMark, addFileToHarpoon, deleteGlobalMark } from './commands';
 import { SettingsTab } from './ui/SettingsTab';
 import { loadSettings, saveSettings, loadMarks, saveMarks, loadLastChangedMark, saveLastChangedMark, JSONschemaCheck } from './utils/storage';
-import { Mark, Settings } from 'tether-marks-core';
+import { Mark } from 'tether-marks-core';
+import { ObsidianMarksSettings } from './types';
 
 
 export default class TetherMarksPlugin extends Plugin {
-    settings!: Settings;
+    settings!: ObsidianMarksSettings;
     marks: Mark[] = [];
     lastChangedMark: Mark | null = null;
 
@@ -22,6 +23,8 @@ export default class TetherMarksPlugin extends Plugin {
             name: 'Set mark',
             callback: () => setGlobalMark(this),
         });
+
+
 
         this.addCommand({
             id: 'go-to-mark',
