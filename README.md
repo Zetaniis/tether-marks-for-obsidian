@@ -1,6 +1,8 @@
 # Tether marks for Obsidian
 Assign files to key registers, and quickly jump to them with a single keystroke. Inspired by vim global marks functionality and [Harpoon](https://github.com/ThePrimeagen/harpoon) Neovim plugin.
 
+![main](https://github.com/Zetaniis/tether-marks-for-obsidian/blob/master/assets/main.png?raw=true)
+
 ## Features
 - Set marks for files using key symbol registers.
 - Navigate to files using a list of set marks.
