@@ -88,16 +88,18 @@ export class MarkListModal extends SuggestModal<Mark> {
                 this.moveSelection(1);
             } else if (keybinds.delete.some(kb => matchKeybind(evt, kb))) {
                 evt.preventDefault();
-                // Delete the currently selected mark
-                const prevIdx = chooser.selectedItem;
-                const selected: Mark = chooser.values[prevIdx];
-                if (selected) {
-                    await pluginDeleteMark(this.plugin, selected);
-                    // Refresh the modal list
-                    chooser.values = getSortedAndFilteredMarks(this.plugin.marks, this.isHarpoonMode, this.plugin.settings);
-                    chooser.setSuggestions(chooser.values);
-                    // Preserve selection index
-                    chooser.setSelectedItem(Math.max(0, Math.min(prevIdx, chooser.values.length)), false);
+                if (chooser.values) {
+                    // Delete the currently selected mark
+                    const prevIdx = chooser.selectedItem;
+                    const selected: Mark = chooser.values[prevIdx];
+                    if (selected) {
+                        await pluginDeleteMark(this.plugin, selected);
+                        // Refresh the modal list
+                        chooser.values = getSortedAndFilteredMarks(this.plugin.marks, this.isHarpoonMode, this.plugin.settings);
+                        chooser.setSuggestions(chooser.values);
+                        // Preserve selection index
+                        chooser.setSelectedItem(Math.max(0, Math.min(prevIdx, chooser.values.length)), false);
+                    }
                 }
             }
             else if (keybinds.undo.some(kb => matchKeybind(evt, kb))) {
@@ -164,6 +166,7 @@ export class MarkListModal extends SuggestModal<Mark> {
         // @ts-ignore
         let idx = chooser.selectedItem;
         if (typeof idx !== 'number') idx = 0;
+        if (!chooser.values) return;
         const max = chooser.values.length;
         let next = idx + delta;
         if (next < 0) next = max - 1;
