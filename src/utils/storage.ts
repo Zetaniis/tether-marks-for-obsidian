@@ -35,9 +35,14 @@ export async function saveLastChangedMark(plugin: TetherMarksPlugin, lastChanged
 }
 
 export async function JSONschemaCheck(plugin: TetherMarksPlugin) {
-    const data = await plugin.loadData() || {schemaVersion: latestJSONSchemaVersion};
+    const data = await plugin.loadData();
 
-    if (data.schemaVersion && data.schemaVersion === latestJSONSchemaVersion){
+    if (!data || !data.schemaVersion){
+        await plugin.saveData({schemaVersion: latestJSONSchemaVersion, ...data})
+        return
+    }
+
+    if (data.schemaVersion === latestJSONSchemaVersion){
         return
     }
 
