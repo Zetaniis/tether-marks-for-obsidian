@@ -1,0 +1,44 @@
+# .github/workflows/build-and-zip-on-tag.yml
+name: Build, Zip & Upload Assets
+
+on:
+  push:
+    tags:
+      - '*'
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write 
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: '18'
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Build project
+        run: npm run build
+
+      - name: Create zip with specific files
+        run: |
+          zip tether-marks-for-obsidian.zip \
+            main.js styles.css manifest.json
+
+
+      - name: Upload release asset
+        uses: softprops/action-gh-release@v1
+        with:
+          tag_name: ${{ github.ref_name }}
+          files:  |
+            main.js
+            styles.css
+            manifest.json
+            tether-marks-for-obsidian.zip
+          generate_release_notes: true
