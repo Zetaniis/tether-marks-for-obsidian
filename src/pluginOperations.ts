@@ -1,7 +1,6 @@
 import { Notice } from "obsidian";
 import TetherMarksPlugin from "./main";
-import { Mark } from "./types";
-import { deleteMark, findFirstUnusedRegister, removeGapsForHarpoonMarks, restoreLastChangedMark, setNewOrOverwriteMark } from "./utils/marks";
+import { deleteMark, findFirstUnusedRegister, Mark, removeGapsForHarpoonMarks, restoreLastChangedMark, setNewOrOverwriteMark } from "tether-marks-core";
 import { navigateToOpenedFileByPath, openNewFileByPath } from "./utils/obsidianUtils";
 
 export async function pluginSetNewOrOverwriteMark(plugin: TetherMarksPlugin, mark: Mark) {

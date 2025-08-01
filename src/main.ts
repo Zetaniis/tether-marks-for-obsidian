@@ -2,7 +2,8 @@ import { Plugin } from 'obsidian';
 import { setGlobalMark, goToGlobalMark, goToHarpoonMark, addFileToHarpoon, deleteGlobalMark } from './commands';
 import { SettingsTab } from './ui/SettingsTab';
 import { loadSettings, saveSettings, loadMarks, saveMarks, loadLastChangedMark, saveLastChangedMark, JSONschemaCheck } from './utils/storage';
-import { Settings, Mark } from './types/index';
+import { Mark, Settings } from 'tether-marks-core';
+
 
 export default class TetherMarksPlugin extends Plugin {
     settings!: Settings;

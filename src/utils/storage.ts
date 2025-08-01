@@ -1,7 +1,7 @@
 import { Notice } from 'obsidian';
 import TetherMarksPlugin from '../main';
-import { Settings, Mark } from '../types/index';
-import { defaultSettings, JSONschemaVersion as latestJSONSchemaVersion } from './defaultValues';
+import { JSONschemaVersion as latestJSONSchemaVersion } from './defaultValues';
+import { defaultSettings, Mark, Settings } from 'tether-marks-core';
 
 export async function loadSettings(plugin: TetherMarksPlugin): Promise<Settings> {
     return (await plugin.loadData())?.settings || defaultSettings;

@@ -1,7 +1,6 @@
 import { App, PluginSettingTab, Setting } from 'obsidian';
 import TetherMarksPlugin from '../main';
-import { Settings } from '../types/index';
-import { defaultSettings } from '../utils/defaultValues';
+import { defaultSettings, Settings } from 'tether-marks-core';
 
 export class SettingsTab extends PluginSettingTab {
     plugin: TetherMarksPlugin;

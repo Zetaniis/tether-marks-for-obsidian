@@ -1,11 +1,10 @@
-import { App, Notice, SuggestModal, Platform, Instruction } from 'obsidian';
+import { App, SuggestModal, Platform, Instruction } from 'obsidian';
 import TetherMarksPlugin from '../main';
-import { ModalKeybinds, Mark } from '../types/index';
-import { Mode } from "../types";
-import { modalInstructionElClass, modalMarkFilepathClass, modalMarkSymbolClass, modalPlaceholderMessages, modalMarkHarpoonSign, modeDescription } from '../utils/defaultValues';
-import { deleteMark, findFirstUnusedRegister, getMarkBySymbol, getSortedAndFilteredMarks, removeGapsForHarpoonMarks, restoreLastChangedMark, setNewOrOverwriteMark } from '../utils/marks';
+import { modalMarkFilepathClass, modalMarkSymbolClass, modalMarkHarpoonSign } from '../utils/defaultValues';
 import { matchKeybind, prepareKeybinds } from '../utils/keybinds';
 import { pluginDeleteMark, pluginGoToMark, pluginRestoreLastChangedMark, pluginSetNewOrOverwriteMark } from '../pluginOperations';
+import { getMarkBySymbol, getSortedAndFilteredMarks, Mark, Mode, modeDescription } from 'tether-marks-core';
+import { ModalKeybinds } from '../types';
 
 
 export class MarkListModal extends SuggestModal<Mark> {

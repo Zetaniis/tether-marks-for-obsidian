@@ -1,6 +1,6 @@
 import { modalDefaultKeybinds, modalDefaultKeybindsMac } from "./defaultValues";
 import { ModalKeybinds } from "../types";
-import { Settings } from "../types";
+import { Settings } from "tether-marks-core";
 
 // Utility to prepare keybinds object
 export function prepareKeybinds(isMacOS: boolean, settings: Settings) {
