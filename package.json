@@ -41,6 +41,6 @@
   },
   "homepage": "https://github.com/Zetaniis/tether-marks-for-obsidian#readme",
   "dependencies": {
-    "tether-marks-core": "github:Zetaniis/tether-marks-core#1.0.0"
+    "tether-marks-core": "https://github.com/Zetaniis/tether-marks-core#1.0.0"
   }
 }
