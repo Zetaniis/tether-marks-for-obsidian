@@ -101,7 +101,7 @@ export class MarkListModal extends SuggestModal<Mark> {
                         chooser.values = getSortedAndFilteredMarks(this.plugin.marks, this.isHarpoonMode, this.plugin.settings);
                         chooser.setSuggestions(chooser.values);
                         // Preserve selection index
-                        chooser.setSelectedItem(Math.max(0, Math.min(prevIdx, chooser.values.length)), false);
+                        chooser.setSelectedItem(Math.max(0, Math.min(prevIdx, chooser.values.length-1)), false);
                     }
                 }
             }
