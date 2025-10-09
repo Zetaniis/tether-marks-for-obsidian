@@ -29,6 +29,7 @@ export const JSONschemaVersion = 1;
 export const defaultObsidianMarksSettings : ObsidianMarksSettings = {
     ...defaultBasicMarksSettings,
     // hideMarkListDuringInput: false,
+    hidePathInfo: false,
     openMarkInNewTab: false, // If true, open mark in new tab, else in current tab
     experimentalGoto: false,
     modalListUp: '',

@@ -11,6 +11,7 @@ export class SettingsTab extends PluginSettingTab {
         this.plugin = plugin;
     }
 
+
     display(): void {
         const { containerEl } = this;
         containerEl.empty();
@@ -34,6 +35,17 @@ export class SettingsTab extends PluginSettingTab {
                 .setValue(this.plugin.settings.experimentalGoto ?? ds.experimentalGoto)
                 .onChange(async (value) => {
                     this.plugin.settings.experimentalGoto = value;
+                    await this.plugin.saveSettings();
+                })
+            );
+
+        new Setting(containerEl)
+            .setName('Hide file path information in mark list')
+            .setDesc('Hides the directory path and only displays the file name in the mark list. Useful when all files have unique names.')
+            .addToggle(toggle => toggle
+                .setValue(this.plugin.settings.hidePathInfo ?? ds.hidePathInfo)
+                .onChange(async (value) => {
+                    this.plugin.settings.hidePathInfo = value;
                     await this.plugin.saveSettings();
                 })
             );
