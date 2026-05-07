@@ -1,6 +1,6 @@
 {
   "name": "tether-marks-for-obsidian",
-  "version": "1.2.0",
+  "version": "1.3.0",
   "description": "A plugin for Obsidian that mimics Vim global marks functionality, allowing users to set file references within key symbol registers and navigate to them.",
   "main": "dist/main.js",
   "scripts": {
@@ -17,7 +17,7 @@
     "marks",
     "harpoon"
   ],
-  "author": "Your Name",
+  "author": "Zetaniis",
   "license": "MIT",
   "devDependencies": {
     "@types/jest": "^30.0.0",

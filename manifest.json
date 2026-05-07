@@ -1,7 +1,7 @@
 {
   "id": "tether-marks-for-obsidian",
   "name": "Tether marks",
-  "version": "1.2.0",
+  "version": "1.3.0",
   "description": "Assign files to key registers, and quickly jump to them with a single keystroke.",
   "author": "Zetaniis",
   "minAppVersion": "0.12.0",

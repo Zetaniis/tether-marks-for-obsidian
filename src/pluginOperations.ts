@@ -9,11 +9,10 @@ export async function pluginSetNewOrOverwriteMark(plugin: TetherMarksPlugin, mar
         new Notice('No active file to mark.');
         return;
     }
-    const { marks, overwrittenMark } = setNewOrOverwriteMark(plugin.marks, mark, file.path);
+    const { marks } = setNewOrOverwriteMark(plugin.marks, mark, file.path);
     await plugin.saveMarks(marks);
-    if (overwrittenMark) {
-        await plugin.saveLastChangedMark(overwrittenMark);
-    }
+    await plugin.updateHistory(marks);
+
     new Notice(`Set mark '${mark.symbol}' to ${file.name}`);
 }
 
@@ -26,33 +25,35 @@ export function pluginGoToMark(plugin: TetherMarksPlugin, mark: Mark) {
 }
 
 export async function pluginDeleteMark(plugin: TetherMarksPlugin, mark: Mark) {
-    const { marks, deletedMark } = deleteMark(plugin.marks, mark);
-    await plugin.saveMarks(marks);
-
-    if (deletedMark) {
-        await plugin.saveLastChangedMark(deletedMark);
-    }
+    let { marks, deletedMark } = deleteMark(plugin.marks, mark);
 
     if (plugin.settings.harpoonRegisterGapRemoval) {
-        pluginRemoveGapsForHarpoonMarks(plugin);
+        const harpoonRegisters = plugin.settings.harpoonRegisterList.split('');
+        marks = removeGapsForHarpoonMarks(marks, harpoonRegisters);
     }
+
+    await plugin.saveMarks(marks);
+    await plugin.updateHistory(marks);
 
     new Notice(`Deleted mark '${deletedMark?.symbol}'`);
 };
 
-export async function pluginRestoreLastChangedMark(plugin: TetherMarksPlugin) {
-    // Undo the last changed mark
-    if (plugin.lastChangedMark) {
-        const out = restoreLastChangedMark(plugin.marks, plugin.lastChangedMark)
-        await plugin.saveMarks(out.marks);
-        new Notice(`Restored mark '${plugin.lastChangedMark.symbol}' to ${plugin.lastChangedMark.filePath}`);
-        if (out.markToDiscard) {
-            plugin.saveLastChangedMark(out.markToDiscard);
-        }
-    } else {
-        new Notice('No last changed mark to restore.');
+export async function pluginUndoLastChangedMark(plugin: TetherMarksPlugin) {
+    if (plugin.historyIndex > 0) {
+        plugin.historyIndex--;
+        plugin.marks = plugin.history[plugin.historyIndex];
+        await plugin.saveMarks(plugin.marks);
     }
 }
+
+export async function pluginRedoLastChangedMark(plugin: TetherMarksPlugin) {
+    if (plugin.historyIndex >= 0 && plugin.historyIndex < plugin.history.length - 1) {
+        plugin.historyIndex++;
+        plugin.marks = plugin.history[plugin.historyIndex];
+        await plugin.saveMarks(plugin.marks);
+    }
+}
+
 
 export function pluginAddFileToHarpoon(plugin: TetherMarksPlugin) {
     // Add the selected mark to the Harpoon list
@@ -71,10 +72,4 @@ export function pluginAddFileToHarpoon(plugin: TetherMarksPlugin) {
         // If all registers are used, show a notice
         new Notice('Harpoon registers are full, cannot add more marks.');
     }
-}
-
-export async function pluginRemoveGapsForHarpoonMarks(plugin: TetherMarksPlugin) {
-    const harpoonRegisters = plugin.settings.harpoonRegisterList.split('');
-    const marks = removeGapsForHarpoonMarks(plugin.marks, harpoonRegisters);
-    await plugin.saveMarks(marks);
 }

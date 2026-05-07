@@ -8,6 +8,7 @@ export const modalDefaultKeybinds: ModalKeybinds = {
     select: ['Enter'] as string[],
     cancel: ['Escape'] as string[],
     undo: ['ctrl+u'] as string[],
+    redo: ['ctrl+r'] as string[],
 }
 
 export const modalDefaultKeybindsMac: ModalKeybinds = {
@@ -17,6 +18,7 @@ export const modalDefaultKeybindsMac: ModalKeybinds = {
     select: ['Enter'] as string[],
     cancel: ['Escape'] as string[],
     undo: ['cmd+u'] as string[],
+    redo: ['cmd+r'] as string[],
 }
 
 export const modalInstructionElClass = 'modal-instruction-el';
@@ -28,7 +30,6 @@ export const JSONschemaVersion = 1;
 
 export const defaultObsidianMarksSettings : ObsidianMarksSettings = {
     ...defaultBasicMarksSettings,
-    // hideMarkListDuringInput: false,
     hidePathInfo: false,
     openMarkInNewTab: false, // If true, open mark in new tab, else in current tab
     experimentalGoto: false,
@@ -36,6 +37,7 @@ export const defaultObsidianMarksSettings : ObsidianMarksSettings = {
     modalListDown: '',
     modalListSelect: '',
     modalListUndo: '',
+    modalListRedo: '',
     modalListDelete: '',
     modalListCancel: '',
 }

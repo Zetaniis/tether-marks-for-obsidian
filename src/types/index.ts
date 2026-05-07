@@ -7,12 +7,12 @@ export interface ModalKeybinds {
     select: string[];
     cancel: string[];
     undo: string[];
+    redo: string[];
 }
 
 export interface ObsidianMarksSettings extends BasicMarksSettings {
     experimentalGoto: boolean;
     openMarkInNewTab: boolean; // If true, open mark in new tab, else in current tab
-    // hideMarkListDuringInput: boolean;
     hidePathInfo: boolean;
     modalListUp: string;
     modalListDown: string;
@@ -20,4 +20,5 @@ export interface ObsidianMarksSettings extends BasicMarksSettings {
     modalListCancel: string;
     modalListDelete: string,
     modalListUndo: string,
+    modalListRedo: string,
 }

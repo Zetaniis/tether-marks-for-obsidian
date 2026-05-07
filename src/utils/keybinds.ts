@@ -26,6 +26,10 @@ export function prepareKeybinds(isMacOS: boolean, settings: ObsidianMarksSetting
         keybinds.undo = [settings.modalListUndo];
     }
 
+    if (settings.modalListRedo) {
+        keybinds.undo = [settings.modalListRedo];
+    }
+
     if (settings.modalListCancel) {
         keybinds.cancel = [settings.modalListCancel];
     }

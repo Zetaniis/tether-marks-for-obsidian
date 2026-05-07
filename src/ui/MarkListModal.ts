@@ -2,7 +2,7 @@ import { App, SuggestModal, Platform, Instruction } from 'obsidian';
 import TetherMarksPlugin from '../main';
 import { modalMarkFilepathClass, modalMarkSymbolClass, modalMarkHarpoonSign } from '../utils/defaultValues';
 import { matchKeybind, prepareKeybinds } from '../utils/keybinds';
-import { pluginDeleteMark, pluginGoToMark, pluginRestoreLastChangedMark, pluginSetNewOrOverwriteMark } from '../pluginOperations';
+import { pluginDeleteMark, pluginGoToMark, pluginUndoLastChangedMark as pluginUndoLastChangedMark, pluginSetNewOrOverwriteMark, pluginRedoLastChangedMark } from '../pluginOperations';
 import { getMarkBySymbol, getSortedAndFilteredMarks, Mark, Mode, modeDescription } from 'tether-marks-core';
 import { ModalKeybinds } from '../types';
 
@@ -31,6 +31,7 @@ export class MarkListModal extends SuggestModal<Mark> {
             { command: modalKeybinds.delete.join("/"), purpose: 'Delete' },
             { command: modalKeybinds.cancel.join("/"), purpose: 'Cancel' },
             { command: modalKeybinds.undo.join("/"), purpose: 'Undo' },
+            { command: modalKeybinds.redo.join("/"), purpose: 'Redo' },
 
         ];
     }
@@ -81,74 +82,74 @@ export class MarkListModal extends SuggestModal<Mark> {
 
     getModalKeyHandler(keybinds: ModalKeybinds) {
         return async (evt: KeyboardEvent) => {
+            evt.preventDefault();
             const availableRegisters = new Set((!this.isHarpoonMode ? this.plugin.settings.registerList : this.plugin.settings.harpoonRegisterList).split(''));
             // @ts-ignore
             const chooser = this.chooser;
-            if (keybinds.up.some(kb => matchKeybind(evt, kb))) {
-                evt.preventDefault();
+            const match = (binds: string[]) => binds.some(kb => matchKeybind(evt, kb));
+
+            if (match(keybinds.up)) {
                 this.moveSelection(-1);
-            } else if (keybinds.down.some(kb => matchKeybind(evt, kb))) {
-                evt.preventDefault();
+            } else if (match(keybinds.down)) {
                 this.moveSelection(1);
-            } else if (keybinds.delete.some(kb => matchKeybind(evt, kb))) {
-                evt.preventDefault();
-                if (chooser.values) {
-                    // Delete the currently selected mark
-                    const prevIdx = chooser.selectedItem;
-                    const selected: Mark = chooser.values[prevIdx];
-                    if (selected) {
-                        await pluginDeleteMark(this.plugin, selected);
-                        // Refresh the modal list
-                        chooser.values = getSortedAndFilteredMarks(this.plugin.marks, this.isHarpoonMode, this.plugin.settings);
-                        chooser.setSuggestions(chooser.values);
-                        // Preserve selection index
-                        chooser.setSelectedItem(Math.max(0, Math.min(prevIdx, chooser.values.length-1)), false);
-                    }
-                }
-            }
-            else if (keybinds.undo.some(kb => matchKeybind(evt, kb))) {
-                evt.preventDefault();
-                // Restore the last changed mark
-                await pluginRestoreLastChangedMark(this.plugin);
-                // Refresh the modal list
-                chooser.values = getSortedAndFilteredMarks(this.plugin.marks, this.isHarpoonMode, this.plugin.settings);
-                const prevIdx = chooser.selectedItem;
-                chooser.setSuggestions(chooser.values);
-                chooser.setSelectedItem(Math.max(0, prevIdx), false);
-            } else if (keybinds.select.some(kb => matchKeybind(evt, kb))) {
-                evt.preventDefault();
-                // Delete the currently selected mark
-                const ind = chooser.selectedItem;
-                const selected: Mark = chooser.values[ind];
-                if (selected) {
-                    this.onChooseSuggestion(selected, evt);
-                    this.close();
-                }
-            } else if (keybinds.cancel.some(kb => matchKeybind(evt, kb))) {
-                evt.preventDefault();
+            } else if (match(keybinds.delete)) {
+                await this.handleDeleteKeyPress(chooser);
+            } else if (match(keybinds.undo)) {
+                await this.handleHistoryAction(chooser, 'undo');
+            } else if (match(keybinds.redo)) {
+                await this.handleHistoryAction(chooser, 'redo');
+            } else if (match(keybinds.select)) {
+                this.handleSelectKeyPress(chooser, evt);
+            } else if (match(keybinds.cancel)) {
                 this.close();
             } else if (availableRegisters.has(evt.key)) {
-                let mark = getMarkBySymbol(this.plugin.marks, evt.key);
-                if (this.mode === 'set') {
-                    if (mark == null) {
-                        mark = { symbol: evt.key, filePath: "" };
-                    }
-                    evt.preventDefault();
-                    await this.onChooseSuggestion(mark, evt);
-                    this.close();
-                } else if (this.mode === 'goto' && mark) {
-                    evt.preventDefault();
-                    await this.onChooseSuggestion(mark, evt);
-                    this.close();
-                }
-                else if (this.mode === 'delete' && mark) {
-                    evt.preventDefault();
-                    await this.onChooseSuggestion(mark, evt);
-                    // Refresh the modal list
-                    this.close();
-                }
+                await this.handleRegisterKeyPress(evt.key, evt);
             }
         };
+    }
+
+    async handleDeleteKeyPress(chooser: any) {
+        if (!chooser.values) return;
+        const prevIdx = chooser.selectedItem;
+        const selected: Mark = chooser.values[prevIdx];
+        if (selected) {
+            await pluginDeleteMark(this.plugin, selected);
+            this.refreshList(chooser, prevIdx);
+        }
+    }
+
+    async handleHistoryAction(chooser: any, action: 'undo' | 'redo') {
+        if (action === 'undo') await pluginUndoLastChangedMark(this.plugin);
+        else await pluginRedoLastChangedMark(this.plugin);
+        this.refreshList(chooser, chooser.selectedItem);
+    }
+
+    handleSelectKeyPress(chooser: any, evt: KeyboardEvent) {
+        const selected: Mark = chooser.values[chooser.selectedItem];
+        if (selected) {
+            this.onChooseSuggestion(selected, evt);
+            this.close();
+        }
+    }
+
+    async handleRegisterKeyPress(key: string, evt: KeyboardEvent) {
+        let mark = getMarkBySymbol(this.plugin.marks, key);
+        if (this.mode === 'set' && !mark) {
+            mark = { symbol: key, filePath: "" };
+        }
+
+        if (mark) {
+            await this.onChooseSuggestion(mark, evt);
+            this.close();
+        }
+    }
+
+    refreshList(chooser: any, indexToPreserve: number) {
+        const updatedMarks = getSortedAndFilteredMarks(this.plugin.marks, this.isHarpoonMode, this.plugin.settings);
+        chooser.values = updatedMarks;
+        chooser.setSuggestions(updatedMarks);
+        const newIdx = Math.max(0, Math.min(indexToPreserve, updatedMarks.length - 1));
+        chooser.setSelectedItem(newIdx, false);
     }
 
     async onChooseSuggestion(mark: Mark, evt: MouseEvent | KeyboardEvent) {

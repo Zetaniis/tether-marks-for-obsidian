@@ -1,7 +1,7 @@
 import { Plugin } from 'obsidian';
 import { setGlobalMark, goToGlobalMark, goToHarpoonMark, addFileToHarpoon, deleteGlobalMark } from './commands';
 import { SettingsTab } from './ui/SettingsTab';
-import { loadSettings, saveSettings, loadMarks, saveMarks, loadLastChangedMark, saveLastChangedMark, JSONschemaCheck } from './utils/storage';
+import { loadSettings, saveSettings, loadMarks, saveMarks, JSONschemaCheck } from './utils/storage';
 import { Mark } from 'tether-marks-core';
 import { ObsidianMarksSettings } from './types';
 
@@ -9,14 +9,18 @@ import { ObsidianMarksSettings } from './types';
 export default class TetherMarksPlugin extends Plugin {
     settings!: ObsidianMarksSettings;
     marks: Mark[] = [];
-    lastChangedMark: Mark | null = null;
+    history: Mark[][] = [];
+    historyIndex = -1;
 
     async onload() {
         await JSONschemaCheck(this);
 
         this.settings = await loadSettings(this);
         this.marks = await loadMarks(this);
-        this.lastChangedMark = await loadLastChangedMark(this);
+        if (this.marks.length > 0) {
+            this.history.push(this.marks);
+            this.historyIndex = this.history.length-1;
+        }
 
         this.addCommand({
             id: 'set-mark',
@@ -64,9 +68,10 @@ export default class TetherMarksPlugin extends Plugin {
         await saveMarks(this, marks);
     }
 
-    async saveLastChangedMark(lastChangedMark: Mark) {
-        this.lastChangedMark = lastChangedMark;
-        await saveLastChangedMark(this, lastChangedMark);
+    async updateHistory(marks : Mark[]){
+        this.history = this.history.slice(0, this.historyIndex+1);
+        this.history.push(marks);
+        this.historyIndex = this.history.length-1;
     }
 
     onunload() {

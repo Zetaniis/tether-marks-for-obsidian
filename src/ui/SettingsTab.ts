@@ -75,18 +75,6 @@ export class SettingsTab extends PluginSettingTab {
                 })
             );
 
-        // TODO: implement this feature
-        // new Setting(containerEl)
-        //     .setName('Hide mark list')
-        //     .setDesc('Hide the global mark list for both commands (for fast input, no flicker).')
-        //     .addToggle(toggle => toggle
-        //         .setValue(this.plugin.settings.hideMarkListDuringInput ?? ds.hideMarkListDuringInput)
-        //         .onChange(async (value) => {
-        //             this.plugin.settings.hideMarkListDuringInput = value;
-        //             await this.plugin.saveSettings();
-        //         }));
-
-
         new Setting(containerEl).setName('Harpoon registers').setHeading();
         this.createRegisterListSetting(containerEl, "Harpoon register list", ds.harpoonRegisterList, 'Key symbols to be used as Harpoon registers. Only include symbols that you can input with a single keystroke.', 'harpoonRegisterList')
             .addExtraButton((btn) => {
@@ -132,9 +120,8 @@ export class SettingsTab extends PluginSettingTab {
         this.createShortcutSetting(containerEl, 'Select mark', ds.modalListSelect, 'Shortcut for selecting a mark', 'modalListSelect');
         this.createShortcutSetting(containerEl, 'Cancel modal', ds.modalListCancel, 'Shortcut for cancelling the modal', 'modalListCancel');
         this.createShortcutSetting(containerEl, 'Delete mark', ds.modalListDelete, 'Shortcut for deleting a mark', 'modalListDelete');
-        this.createShortcutSetting(containerEl, 'Restore last changed mark', ds.modalListUndo, 'Shortcut for undoing last action of changing a mark', 'modalListUndo');
-
-
+        this.createShortcutSetting(containerEl, 'Undo', ds.modalListUndo, 'Shortcut for undoing last action of changing a mark', 'modalListUndo');
+        this.createShortcutSetting(containerEl, 'Redo', ds.modalListUndo, 'Shortcut for redoing last action of changing a mark', 'modalListRedo');
     }
 
     // use only for string values from Settings type
