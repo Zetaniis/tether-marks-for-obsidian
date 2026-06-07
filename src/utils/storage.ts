@@ -1,8 +1,8 @@
 import { Notice } from 'obsidian';
+import { Mark } from 'tether-marks-core';
 import TetherMarksPlugin from '../main';
+import { ObsidianMarksSettings, Snapshot } from '../types';
 import { defaultObsidianMarksSettings, JSONschemaVersion as latestJSONSchemaVersion } from './defaultValues';
-import { Mark} from 'tether-marks-core';
-import { ObsidianMarksSettings } from '../types';
 
 export async function loadSettings(plugin: TetherMarksPlugin): Promise<ObsidianMarksSettings> {
     return (await plugin.loadData())?.settings || defaultObsidianMarksSettings;
@@ -24,13 +24,23 @@ export async function saveMarks(plugin: TetherMarksPlugin, marks: Mark[]) {
     await plugin.saveData(data);
 }
 
-export async function loadLastChangedMark(plugin: TetherMarksPlugin): Promise<Mark> {
-    return (await plugin.loadData())?.lastChangedMark || {};
+export async function loadSnapshots(plugin: TetherMarksPlugin): Promise<Snapshot[]> {
+    return (await plugin.loadData())?.snapshots || [];
 }
 
-export async function saveLastChangedMark(plugin: TetherMarksPlugin, lastChangedMark: Mark) {
+export async function saveSnapshots(plugin: TetherMarksPlugin, snapshots: Snapshot[]) {
     const data = await plugin.loadData() || {};
-    data.lastChangedMark = lastChangedMark;
+    data.snapshots = snapshots;
+    await plugin.saveData(data);
+}
+
+export async function loadCurrentlySetSnapshotName(plugin: TetherMarksPlugin): Promise<string> {
+    return (await plugin.loadData())?.loadedSnapshotName || "";
+}
+
+export async function  saveCurrentlySetSnapshot(plugin: TetherMarksPlugin, snapshotName : string) {
+    const data = await plugin.loadData() || {};
+    data.loadedSnapshotName = snapshotName;
     await plugin.saveData(data);
 }
 

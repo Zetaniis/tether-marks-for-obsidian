@@ -1,7 +1,8 @@
 import { Notice } from "obsidian";
+import { deleteMark, findFirstUnusedRegister, Mark, removeGapsForHarpoonMarks, setNewOrOverwriteMark } from "tether-marks-core";
 import TetherMarksPlugin from "./main";
-import { deleteMark, findFirstUnusedRegister, Mark, removeGapsForHarpoonMarks, restoreLastChangedMark, setNewOrOverwriteMark } from "tether-marks-core";
 import { navigateToOpenedFileByPath, openNewFileByPath } from "./utils/obsidianUtils";
+import { saveCurrentlySetSnapshot as saveCurrentlySetSnapshotName } from "./utils/storage";
 
 export async function pluginSetNewOrOverwriteMark(plugin: TetherMarksPlugin, mark: Mark) {
     const file = plugin.app.workspace.getActiveFile();
@@ -72,4 +73,35 @@ export function pluginAddFileToHarpoon(plugin: TetherMarksPlugin) {
         // If all registers are used, show a notice
         new Notice('Harpoon registers are full, cannot add more marks.');
     }
+}
+
+
+export async function pluginSaveMarksToSnapshot(plugin: TetherMarksPlugin, snapshotName: string){
+    let snapshots = plugin.snapshots.filter(el => el.name != snapshotName);
+    const harpoonRegisters = plugin.settings.harpoonRegisterList.split("");
+    let newSnapshot = {
+        name: snapshotName, 
+        // @ts-ignore
+        marks: plugin.marks.filter(el => harpoonRegisters.includes(el.symbol))
+    };
+    snapshots.push(newSnapshot);
+    await plugin.saveSnapshots(snapshots, snapshotName);   
+}
+
+
+export async function pluginLoadMarksFromSnapshot(plugin: TetherMarksPlugin, snapshotName: string) {
+    const snapshot = plugin.snapshots.find(el => el.name == snapshotName);
+    if (!snapshot) return;
+
+    const harpoonlessMarks = plugin.marks.filter(el => !plugin.settings.harpoonRegisterList.includes(el.symbol));
+    const updatedMarks = [...harpoonlessMarks, ...snapshot.marks];
+
+    await plugin.saveMarks(updatedMarks);
+    await plugin.updateHistory(updatedMarks);
+    await saveCurrentlySetSnapshotName(plugin, snapshotName);
+}
+
+export async function pluginDeleteSnapshot(plugin: TetherMarksPlugin, snapshotName: string) {
+    const snapshots = plugin.snapshots.filter(el => el.name != snapshotName);
+    await plugin.saveSnapshots(snapshots, plugin.loadedSnapshotName);
 }

@@ -1,38 +1,28 @@
+import { ModalKeybinds, ObsidianMarksSettings } from "../types";
 import { modalDefaultKeybinds, modalDefaultKeybindsMac } from "./defaultValues";
-import { ModalKeybinds } from "../types";
-import { ObsidianMarksSettings } from "../types";
 
 // Utility to prepare keybinds object
 export function prepareKeybinds(isMacOS: boolean, settings: ObsidianMarksSettings) {
-    let keybinds: ModalKeybinds = (!isMacOS) ? { ...modalDefaultKeybinds } : { ...modalDefaultKeybindsMac };
+    const keybinds: ModalKeybinds = isMacOS ? { ...modalDefaultKeybindsMac } : { ...modalDefaultKeybinds };
 
-    if (settings.modalListUp) {
-        keybinds.up = [settings.modalListUp];
-    }
+    const mapping: Record<keyof ModalKeybinds, keyof ObsidianMarksSettings> = {
+        up: 'modalListUp',
+        down: 'modalListDown',
+        delete: 'modalListDelete',
+        select: 'modalListSelect',
+        altSelect: 'modalListAltSelect',
+        undo: 'modalListUndo',
+        redo: 'modalListRedo',
+        cancel: 'modalListCancel',
+    };
 
-    if (settings.modalListDown) {
-        keybinds.down = [settings.modalListDown];
-    }
-
-    if (settings.modalListDelete) {
-        keybinds.delete = [settings.modalListDelete];
-    }
-
-    if (settings.modalListSelect) {
-        keybinds.select = [settings.modalListSelect];
-    }
-
-    if (settings.modalListUndo) {
-        keybinds.undo = [settings.modalListUndo];
-    }
-
-    if (settings.modalListRedo) {
-        keybinds.undo = [settings.modalListRedo];
-    }
-
-    if (settings.modalListCancel) {
-        keybinds.cancel = [settings.modalListCancel];
-    }
+    // @ts-ignore
+    (Object.entries(mapping) as [keyof ModalKeybinds, keyof ObsidianMarksSettings][]).forEach(([targetKey, settingsKey]) => {
+        const userValue = settings[settingsKey];
+        if (userValue && typeof userValue === 'string' && userValue.trim() !== '') {
+            keybinds[targetKey] = [userValue];
+        }
+    });
 
     return keybinds;
 }
