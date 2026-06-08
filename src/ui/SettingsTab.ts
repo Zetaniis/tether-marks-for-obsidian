@@ -50,7 +50,20 @@ export class SettingsTab extends PluginSettingTab {
                 })
             );
 
+        new Setting(containerEl)
+            .setName('Passthrough mode for modals')
+            .setDesc('Lets you perform operations on the marks that are not listed in the modal list. With this on, you can, for example, navigate to harpoon marks from general marks modal and vice versa.')
+            .addToggle(toggle => toggle
+                .setValue(this.plugin.settings.passthroughMode?? ds.passthroughMode)
+                .onChange(async (value) => {
+                    this.plugin.settings.passthroughMode = value;
+                    await this.plugin.saveSettings();
+                })
+            );
+
+
         new Setting(containerEl).setName('General registers').setHeading();
+
         this.createRegisterListSetting(containerEl, "Register list", ds.registerList, 'Key symbols to be used as registers. Only include symbols that you can input with a single keystroke.', 'registerList')
             .addExtraButton((btn) => {
                 btn
@@ -65,7 +78,7 @@ export class SettingsTab extends PluginSettingTab {
             })
 
         new Setting(containerEl)
-            .setName('Sort all marks by register list')
+            .setName('Sort general marks by register list')
             .setDesc('Sort marks by the order of the key symbols in the register list. If disabled, marks will be sorted alphabetically according to the current locale.')
             .addToggle(toggle => toggle
                 .setValue(this.plugin.settings.registerSortByList ?? ds.registerSortByList)

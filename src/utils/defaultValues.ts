@@ -35,7 +35,7 @@ export const defaultObsidianMarksSettings : ObsidianMarksSettings = {
     hidePathInfo: false,
     openMarkInNewTab: false, // If true, open mark in new tab, else in current tab
     experimentalGoto: false,
-    operableHarpoonFromGeneral: true,
+    passthroughMode: true,
     modalListUp: '',
     modalListDown: '',
     modalListSelect: '',

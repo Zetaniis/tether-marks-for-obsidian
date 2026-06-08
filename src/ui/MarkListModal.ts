@@ -83,7 +83,10 @@ export class MarkListModal extends SuggestModal<Mark> {
     getModalKeyHandler(keybinds: ModalKeybinds) {
         return async (evt: KeyboardEvent) => {
             evt.preventDefault();
-            const availableRegisters = new Set((!this.isHarpoonMode ? this.plugin.settings.registerList : this.plugin.settings.harpoonRegisterList).split(''));
+            const availableRegisters = (this.plugin.settings.passthroughMode) ? this.plugin.settings.harpoonRegisterList + this.plugin.settings.registerList :
+             (this.isHarpoonMode) ? this.plugin.settings.harpoonRegisterList : this.plugin.settings.registerList;
+            const availableRegistersSet = new Set(availableRegisters.split(''));
+
             // @ts-ignore
             const chooser = this.chooser;
             const match = (binds: string[]) => binds.some(kb => matchKeybind(evt, kb));
@@ -102,7 +105,8 @@ export class MarkListModal extends SuggestModal<Mark> {
                 this.handleSelectKeyPress(chooser, evt);
             } else if (match(keybinds.cancel)) {
                 this.close();
-            } else if (availableRegisters.has(evt.key)) {
+            } else if (availableRegistersSet.has(evt.key)) {
+            // } else {
                 await this.handleRegisterKeyPress(evt.key, evt);
             }
         };

@@ -15,7 +15,7 @@ export interface ObsidianMarksSettings extends BasicMarksSettings {
     experimentalGoto: boolean;
     openMarkInNewTab: boolean; // If true, open mark in new tab, else in current tab
     hidePathInfo: boolean;
-    operableHarpoonFromGeneral: boolean;
+    passthroughMode: boolean;
     modalListUp: string;
     modalListDown: string;
     modalListSelect: string;
