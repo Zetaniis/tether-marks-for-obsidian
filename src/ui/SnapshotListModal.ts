@@ -49,8 +49,6 @@ export class SnapshotListModal extends FuzzySuggestModal<Snapshot> {
             ...(this.mode === 'save' ? [{ command: modalKeybinds.altSelect.join("/"), purpose: 'Save to new snapshot' }] : []),
             { command: modalKeybinds.delete.join("/"), purpose: 'Delete' },
             { command: modalKeybinds.cancel.join("/"), purpose: 'Cancel' },
-            { command: modalKeybinds.delete.join("/"), purpose: 'Delete' },
-
         ];
     }
 
