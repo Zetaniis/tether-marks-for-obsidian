@@ -35,6 +35,7 @@ export const defaultObsidianMarksSettings : ObsidianMarksSettings = {
     hidePathInfo: false,
     openMarkInNewTab: false, // If true, open mark in new tab, else in current tab
     experimentalGoto: false,
+    operableHarpoonFromGeneral: true,
     modalListUp: '',
     modalListDown: '',
     modalListSelect: '',
@@ -47,3 +48,6 @@ export const defaultObsidianMarksSettings : ObsidianMarksSettings = {
 
 
 export const snapshotModalSnapshotNameClass = 'snapshot-modal-snapshot-name';
+export const snapshotModalTitleNameClass = 'snapshot-modal-title-name';
+export const snapshotModalUnsavedPromptClass = 'unsaved-prompt'
+export const snapshotModalClass = 'marks-snapshot-modal';

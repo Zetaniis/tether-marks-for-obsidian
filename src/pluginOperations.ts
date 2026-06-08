@@ -2,7 +2,7 @@ import { Notice } from "obsidian";
 import { deleteMark, findFirstUnusedRegister, Mark, removeGapsForHarpoonMarks, setNewOrOverwriteMark } from "tether-marks-core";
 import TetherMarksPlugin from "./main";
 import { navigateToOpenedFileByPath, openNewFileByPath } from "./utils/obsidianUtils";
-import { saveCurrentlySetSnapshot as saveCurrentlySetSnapshotName } from "./utils/storage";
+import { saveCurrentlySetSnapshot} from "./utils/storage";
 
 export async function pluginSetNewOrOverwriteMark(plugin: TetherMarksPlugin, mark: Mark) {
     const file = plugin.app.workspace.getActiveFile();
@@ -98,7 +98,7 @@ export async function pluginLoadMarksFromSnapshot(plugin: TetherMarksPlugin, sna
 
     await plugin.saveMarks(updatedMarks);
     await plugin.updateHistory(updatedMarks);
-    await saveCurrentlySetSnapshotName(plugin, snapshotName);
+    await plugin.saveSnapshots(plugin.snapshots, snapshotName);
 }
 
 export async function pluginDeleteSnapshot(plugin: TetherMarksPlugin, snapshotName: string) {

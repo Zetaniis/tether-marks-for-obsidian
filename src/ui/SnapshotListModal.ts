@@ -2,14 +2,17 @@ import { App, FuzzyMatch, FuzzySuggestModal, Instruction, Platform } from 'obsid
 import TetherMarksPlugin from '../main';
 import { pluginDeleteSnapshot, pluginLoadMarksFromSnapshot, pluginSaveMarksToSnapshot } from '../pluginOperations';
 import { ModalKeybinds, Snapshot, SnapshotModalMode, snapshotModalModeDescription } from '../types';
-import { snapshotModalSnapshotNameClass } from '../utils/defaultValues';
+import { snapshotModalClass, snapshotModalSnapshotNameClass, snapshotModalTitleNameClass, snapshotModalUnsavedPromptClass } from '../utils/defaultValues';
 import { matchKeybind, prepareKeybinds } from '../utils/keybinds';
+import { getSortedAndFilteredMarks } from 'tether-marks-core';
+import { compareMarkArraysWithOrder } from '../utils/marks';
 
 
 export class SnapshotListModal extends FuzzySuggestModal<Snapshot> {
     plugin: TetherMarksPlugin;
     mode: SnapshotModalMode;
     private _keyHandler?: (evt: KeyboardEvent) => void;
+    snapshotChangedAndUnsavedEl : HTMLDivElement | null;
 
 
     getItems(): Snapshot[] {
@@ -35,7 +38,7 @@ export class SnapshotListModal extends FuzzySuggestModal<Snapshot> {
         this.plugin = plugin;
         this.mode = mode;
         this.setPlaceholder(snapshotModalModeDescription[this.mode]);
-        
+        this.snapshotChangedAndUnsavedEl = null;
     }
 
     getInstructions(modalKeybinds: ModalKeybinds): Instruction[] {
@@ -52,22 +55,29 @@ export class SnapshotListModal extends FuzzySuggestModal<Snapshot> {
     }
 
     renderSuggestion(snapshot: FuzzyMatch<Snapshot>, el: HTMLElement) {
-        // console.log(snapshot);
         const snapshotName = el.createEl('span', { text: snapshot?.item?.name, cls: snapshotModalSnapshotNameClass });
     }
 
     onOpen() {
         super.onOpen();
-        this.modalEl.addClass('marks-snapshot-modal');
+        this.modalEl.addClass(snapshotModalClass);
 
         const modalKeybinds = prepareKeybinds(Platform.isMacOS, this.plugin.settings);
         this.setInstructions(this.getInstructions(modalKeybinds));
         this.inputEl.value = (this.mode === 'save') ? String(this.plugin.loadedSnapshotName) : '';
 
+        const currentSnapshotModalTitleEl = document.body.createEl('div', { text: this.plugin.loadedSnapshotName, cls: snapshotModalTitleNameClass });
+        const currentSnapshotUnsaved =  this.checkIfCurrentSnapshotIsUnsaved();
+        this.snapshotChangedAndUnsavedEl = document.body.createEl('div', { text: "current snapshot is not saved", cls: snapshotModalUnsavedPromptClass });
+        this.snapshotChangedAndUnsavedEl.style.display = (currentSnapshotUnsaved) ? 'block' : 'none';
+        currentSnapshotModalTitleEl.appendChild(this.snapshotChangedAndUnsavedEl);
+        this.titleEl = this.modalEl.insertBefore(currentSnapshotModalTitleEl, this.modalEl.querySelector('.prompt-instructions'));
+
         this._keyHandler = this.getModalKeyHandler(modalKeybinds);
         window.addEventListener('keydown', this._keyHandler, true);
         this.inputEl.dispatchEvent(new InputEvent("input"));
     }
+
 
     onClose() {
         if (this._keyHandler) {
@@ -107,6 +117,7 @@ export class SnapshotListModal extends FuzzySuggestModal<Snapshot> {
         if (selected) {
             await pluginDeleteSnapshot(this.plugin, selected.name);
             this.refreshList(chooser, prevIdx);
+            this.refreshUnchangedPromptEl();
         }
     }
 
@@ -135,10 +146,23 @@ export class SnapshotListModal extends FuzzySuggestModal<Snapshot> {
         this.close();
     }
 
+    checkIfCurrentSnapshotIsUnsaved() : boolean {
+        const currentSnapshotFromSnapshots = this.plugin.snapshots.find(el => el.name == this.plugin.loadedSnapshotName)?.marks.sort();
+        const currentHarpoonMarks = getSortedAndFilteredMarks(this.plugin.marks, true, this.plugin.settings).sort();
+        const currentSnapshotUnsaved = (currentSnapshotFromSnapshots) ? !compareMarkArraysWithOrder(currentSnapshotFromSnapshots, currentHarpoonMarks) : true;
+        return currentSnapshotUnsaved;
+    }
+
     refreshList(chooser: any, indexToPreserve: number) {
         chooser.setSuggestions(this.getSuggestions(this.inputEl.value));
         const newIdx = Math.max(0, Math.min(indexToPreserve, this.plugin.snapshots.length - 1));
         chooser.setSelectedItem(newIdx, false);
+    }
+
+    refreshUnchangedPromptEl(){
+        if (this.snapshotChangedAndUnsavedEl) {
+            this.snapshotChangedAndUnsavedEl.style.display = (this.checkIfCurrentSnapshotIsUnsaved()) ? 'block' : 'none';
+        }
     }
 
     moveSelection(delta: number) {
