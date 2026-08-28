@@ -2,8 +2,8 @@ import { defaultBasicMarksSettings } from "tether-marks-core";
 import { ModalKeybinds, ObsidianMarksSettings } from "../types";
 
 export const modalDefaultKeybinds: ModalKeybinds = {
-    up: ['ctrl+k', 'ctrl+p'] as string[],
-    down: ['ctrl+j', 'ctrl+n'] as string[],
+    up: ['ctrl+k'] as string[],
+    down: ['ctrl+j'] as string[],
     delete: ['ctrl+d'] as string[],
     select: ['Enter'] as string[],
     altSelect: ['ctrl+Enter'] as string[],

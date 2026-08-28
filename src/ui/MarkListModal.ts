@@ -105,8 +105,7 @@ export class MarkListModal extends SuggestModal<Mark> {
                 this.handleSelectKeyPress(chooser, evt);
             } else if (match(keybinds.cancel)) {
                 this.close();
-            } else if (availableRegistersSet.has(evt.key)) {
-            // } else {
+            } else if (availableRegistersSet.has(evt.key) && !evt.ctrlKey) {
                 await this.handleRegisterKeyPress(evt.key, evt);
             }
         };
