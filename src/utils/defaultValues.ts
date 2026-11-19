@@ -4,7 +4,7 @@ import { ModalKeybinds, ObsidianMarksSettings } from "../types";
 export const modalDefaultKeybinds: ModalKeybinds = {
     up: ['ctrl+k'] as string[],
     down: ['ctrl+j'] as string[],
-    delete: ['ctrl+d'] as string[],
+    delete: ['ctrl+shift+D'] as string[],
     select: ['Enter'] as string[],
     altSelect: ['ctrl+Enter'] as string[],
     cancel: ['Escape'] as string[],
@@ -15,7 +15,7 @@ export const modalDefaultKeybinds: ModalKeybinds = {
 export const modalDefaultKeybindsMac: ModalKeybinds = {
     up: ['cmd+k', 'cmd+p'] as string[],
     down: ['cmd+j', 'cmd+n'] as string[],
-    delete: ['cmd+d'] as string[],
+    delete: ['cmd+shift+D'] as string[],
     select: ['Enter'] as string[],
     altSelect: ['cmd+Enter'] as string[],
     cancel: ['Escape'] as string[],
